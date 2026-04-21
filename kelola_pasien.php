@@ -29,10 +29,11 @@ $query = mysqli_query($conn, "SELECT * FROM pasien ORDER BY nama_pasien ASC");
                     <td class="p-3"><?= $row['nama_pasien']; ?></td>
                     <td class="p-3"><?= $row['email']; ?></td>
                     <td class="p-3">
-                        <a href="hapus_user.php?id=<?= $row['id']; ?>&tabel=pasien" 
-                           class="text-red-500 font-bold hover:underline"
-                           onclick="return confirm('Hapus akun pasien ini?')">Hapus</a>
-                    </td>
+                        <a href="hapus_user.php?id=<?php echo $row['id']; ?>&tabel=pasien" 
+                        onclick="return confirm('Yakin ingin menghapus?')" 
+                        class="text-red-500">
+                        Hapus
+                    </a>
                 </tr>
                 <?php endwhile; ?>
             </tbody>
