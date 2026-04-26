@@ -1,54 +1,43 @@
 <?php
-header("Content-Type: application/json");
 include "koneksi.php";
- 
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    echo json_encode(["success" => false, "message" => "Method tidak valid"]);
-    exit();
+$email = mysqli_real_escape_string($conn, $_POST['email']);
+
+if (isset($_POST['email'])) {
+    $email = mysqli_real_escape_string($conn, $_POST['email']);
+    $password = $_POST['password'];
+
+    // 1. Cek di Tabel Petugas (Admin, Staff, Dokter, dll)
+    $q_petugas = mysqli_query($conn, "SELECT * FROM petugas WHERE email='$email'");
+    $d_petugas = mysqli_fetch_assoc($q_petugas);
+
+    if ($d_petugas && password_verify($password, $d_petugas['password'])) {
+        $_SESSION['nama_lengkap'] = $d_petugas['nama_lengkap'];
+        $_SESSION['role'] = $d_petugas['role'];
+
+        // Cek Role untuk menentukan Dashboard
+        if ($d_petugas['role'] === 'admin' || $d_petugas['role'] === 'super_admin') {
+            header("Location: dashboard_admin.php");
+        } else {
+            header("Location: dashboard_petugas.php");
+        }
+        exit();
+    } // <-- Penutup blok IF petugas
+
+    // 2. Cek di Tabel Pasien jika tidak ada di tabel petugas
+    $q_pasien = mysqli_query($conn, "SELECT * FROM pasien WHERE email='$email'");
+    $d_pasien = mysqli_fetch_assoc($q_pasien);
+
+    if ($d_pasien && password_verify($password, $d_pasien['password'])) {
+        $_SESSION['nama_pasien'] = $d_pasien['nama_pasien'];
+        $_SESSION['id_pasien'] = $d_pasien['id'];
+        $_SESSION['pasien_login'] = true; // Flag untuk dashboard pasien
+        $_SESSION['role'] = 'pasien';
+
+        header("Location: dashboard_pasien.php");
+        exit();
+    } else {
+        // Jika tidak ditemukan di kedua tabel
+        echo "<script>alert('Email atau Password Salah!'); window.location.href='login.php';</script>";
+    }
 }
- 
-$email    = mysqli_real_escape_string($koneksi, trim($_POST['email'] ?? ''));
-$password = $_POST['password'] ?? '';
- 
-if (empty($email) || empty($password)) {
-    echo json_encode(["success" => false, "message" => "Email dan password wajib diisi"]);
-    exit();
-}
- 
-// Cek tabel petugas
-$q = mysqli_query($koneksi, "SELECT * FROM petugas WHERE email='$email' LIMIT 1");
-$d = mysqli_fetch_assoc($q);
- 
-if ($d && password_verify($password, $d['password'])) {
-    $role     = $d['role'];
-    $redirect = ($role === 'admin' || $role === 'super_admin')
-        ? '/dashboard_admin.php'
-        : '/dashboard_petugas.php';
- 
-    echo json_encode([
-        "success"  => true,
-        "role"     => $role,
-        "nama"     => $d['nama_lengkap'],
-        "id"       => $d['id'],
-        "redirect" => $redirect
-    ]);
-    exit();
-}
- 
-// Cek tabel pasien
-$q2 = mysqli_query($koneksi, "SELECT * FROM pasien WHERE email='$email' LIMIT 1");
-$d2 = mysqli_fetch_assoc($q2);
- 
-if ($d2 && password_verify($password, $d2['password'])) {
-    echo json_encode([
-        "success"  => true,
-        "role"     => "pasien",
-        "nama"     => $d2['nama_pasien'],
-        "id"       => $d2['id'],
-        "redirect" => 'api/dashboard_pasien.php'
-    ]);
-    exit();
-}
- 
-echo json_encode(["success" => false, "message" => "Email atau password salah!"]);
 ?>
