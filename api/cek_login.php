@@ -1,13 +1,13 @@
 <?php
 include "koneksi.php";
-$email = mysqli_real_escape_string($conn, $_POST['email']);
+$email = mysqli_real_escape_string($koneksi, $_POST['email']);
 
 if (isset($_POST['email'])) {
-    $email = mysqli_real_escape_string($conn, $_POST['email']);
+    $email = mysqli_real_escape_string($koneksi, $_POST['email']);
     $password = $_POST['password'];
 
     // 1. Cek di Tabel Petugas (Admin, Staff, Dokter, dll)
-    $q_petugas = mysqli_query($conn, "SELECT * FROM petugas WHERE email='$email'");
+    $q_petugas = mysqli_query($koneksi, "SELECT * FROM petugas WHERE email='$email'");
     $d_petugas = mysqli_fetch_assoc($q_petugas);
 
     if ($d_petugas && password_verify($password, $d_petugas['password'])) {
@@ -24,7 +24,7 @@ if (isset($_POST['email'])) {
     } // <-- Penutup blok IF petugas
 
     // 2. Cek di Tabel Pasien jika tidak ada di tabel petugas
-    $q_pasien = mysqli_query($conn, "SELECT * FROM pasien WHERE email='$email'");
+    $q_pasien = mysqli_query($koneksi, "SELECT * FROM pasien WHERE email='$email'");
     $d_pasien = mysqli_fetch_assoc($q_pasien);
 
     if ($d_pasien && password_verify($password, $d_pasien['password'])) {
