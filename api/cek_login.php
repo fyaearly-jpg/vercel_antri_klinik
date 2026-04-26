@@ -45,7 +45,7 @@ if ($d2 && password_verify($password, $d2['password'])) {
         "role"     => "pasien",
         "nama"     => $d2['nama_pasien'],
         "id"       => $d2['id'],
-        "redirect" => '/dashboard_pasien.php'
+        "redirect" => 'api/dashboard_pasien.php'
     ]);
     exit();
 }
