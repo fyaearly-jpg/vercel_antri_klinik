@@ -1,25 +1,38 @@
 <?php
-session_start();
-include 'koneksi.php';
-
-if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
-    header("Location: index.php");
+header("Content-Type: application/json");
+include "koneksi.php";
+ 
+$id = mysqli_real_escape_string($koneksi, $_GET['id'] ?? '');
+ 
+// GET: ambil data petugas
+if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+    if (empty($id)) {
+        echo json_encode(["success" => false, "message" => "ID tidak valid"]);
+        exit();
+    }
+    $q   = mysqli_query($koneksi, "SELECT id, nama_lengkap, email, role FROM petugas WHERE id='$id' LIMIT 1");
+    $row = mysqli_fetch_assoc($q);
+    echo json_encode($row ?: ["success" => false, "message" => "Petugas tidak ditemukan"]);
     exit();
 }
-
-$id = $_GET['id'];
-$data = mysqli_query($conn, "SELECT * FROM petugas WHERE id='$id'");
-$p = mysqli_fetch_assoc($data);
-
-if (isset($_POST['update'])) {
-    $nama = mysqli_real_escape_string($conn, $_POST['nama']);
-    $role = $_POST['role'];
-    
-    $update = mysqli_query($conn, "UPDATE petugas SET nama_lengkap='$nama', role='$role' WHERE id='$id'");
-    if ($update) {
-        echo "<script>alert('Data Berhasil Diupdate!'); window.location.href='kelola_petugas.php';</script>";
+ 
+// POST: update data petugas
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $nama = mysqli_real_escape_string($koneksi, $_POST['nama'] ?? '');
+    $role = mysqli_real_escape_string($koneksi, $_POST['role'] ?? '');
+    $id   = mysqli_real_escape_string($koneksi, $_POST['id'] ?? '');
+ 
+    if (empty($nama) || empty($role) || empty($id)) {
+        echo json_encode(["success" => false, "message" => "Data tidak lengkap"]);
+        exit();
     }
+ 
+    $ok = mysqli_query($koneksi, "UPDATE petugas SET nama_lengkap='$nama', role='$role' WHERE id='$id'");
+    echo json_encode(["success" => (bool)$ok]);
+    exit();
 }
+ 
+echo json_encode(["success" => false, "message" => "Method tidak valid"]);
 ?>
 
 <!DOCTYPE html>

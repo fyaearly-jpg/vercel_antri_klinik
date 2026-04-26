@@ -41,17 +41,18 @@ if (isset($_SESSION['role'])) {
                     <p class="text-muted small">Silakan masuk ke akun Anda</p>
                 </div>
                 
-                <form action="cek_login.php" method="POST">
+                <form onsubmit="doLogin(event)">
                     <div class="mb-3">
                         <label class="form-label small">Email</label>
-                        <input type="email" name="email" class="form-control" placeholder="nama@email.com" required>
+                        <input type="email" id="email" class="form-control" placeholder="nama@email.com" required>
                     </div>
                     <div class="mb-3">
                         <label class="form-label small">Password</label>
-                        <input type="password" name="password" class="form-control" placeholder="********" required>
+                        <input type="password" id="password" class="form-control" placeholder="********" required>
                     </div>
+                    <div id="alert-box" class="alert alert-danger d-none small"></div>
                     <div class="d-grid">
-                        <button type="submit" class="btn btn-primary py-2 fw-bold">MASUK</button>
+                        <button type="submit" id="btn-login" class="btn btn-primary py-2 fw-bold">MASUK</button>
                     </div>
                 </form>
 
@@ -62,6 +63,47 @@ if (isset($_SESSION['role'])) {
         </div>
     </div>
 </div>
+
+<script>
+    async function doLogin(e) {
+        e.preventDefault();
+
+        const btn = document.getElementById('btn-login');
+        const alert = document.getElementById('alert-box');
+        btn.disabled = true;
+        btn.textContent = 'Memproses...';
+        alert.classList.add('d-none');
+
+        const formData = new FormData();
+        formData.append('email', document.getElementById('email').value);
+        formData.append('password', document.getElementById('password').value);
+
+        try {
+            // Mengarah ke file cek_login.php yang ada di folder yang sama (api/)
+            const res = await fetch('cek_login.php', { method: 'POST', body: formData });
+            const data = await res.json();
+
+            if (data.success) {
+                // Simpan ke localStorage
+                localStorage.setItem('role', data.role);
+                localStorage.setItem('nama', data.nama);
+                if (data.id_pasien) localStorage.setItem('id_pasien', data.id_pasien);
+
+                window.location.href = data.redirect;
+            } else {
+                alert.classList.remove('d-none');
+                alert.textContent = data.message;
+                btn.disabled = false;
+                btn.textContent = 'MASUK';
+            }
+        } catch (err) {
+            alert.classList.remove('d-none');
+            alert.textContent = 'Terjadi kesalahan, coba lagi.';
+            btn.disabled = false;
+            btn.textContent = 'MASUK';
+        }
+    }
+</script>
 
 </body>
 </html>

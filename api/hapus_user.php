@@ -1,31 +1,23 @@
 <?php
-session_start();
-include 'koneksi.php';
-
-// Proteksi: Hanya admin yang boleh akses file ini
-if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
-    die("Akses ditolak!");
+header("Content-Type: application/json");
+include "koneksi.php";
+ 
+$id    = mysqli_real_escape_string($koneksi, $_GET['id'] ?? '');
+$tabel = $_GET['tabel'] ?? '';
+ 
+if (empty($id)) {
+    echo json_encode(["success" => false, "message" => "ID tidak valid"]);
+    exit();
 }
-
-if (isset($_GET['id']) && isset($_GET['tabel'])) {
-    $id = mysqli_real_escape_string($conn, $_GET['id']);
-    $tabel = $_GET['tabel'];
-
-    // Validasi nama tabel agar tidak sembarang hapus
-    if ($tabel === 'petugas') {
-        $query = "DELETE FROM petugas WHERE id = '$id'";
-        $redirect = "kelola_petugas.php";
-    } elseif ($tabel === 'pasien') {
-        $query = "DELETE FROM pasien WHERE id = '$id'";
-        $redirect = "kelola_pasien.php";
-    } else {
-        die("Tabel tidak valid!");
-    }
-
-    if (mysqli_query($conn, $query)) {
-        echo "<script>alert('Akun berhasil dihapus!'); window.location.href='$redirect';</script>";
-    } else {
-        echo "Gagal menghapus: " . mysqli_error($conn);
-    }
+ 
+if ($tabel === 'petugas') {
+    $ok = mysqli_query($koneksi, "DELETE FROM petugas WHERE id='$id'");
+} elseif ($tabel === 'pasien') {
+    $ok = mysqli_query($koneksi, "DELETE FROM pasien WHERE id='$id'");
+} else {
+    echo json_encode(["success" => false, "message" => "Tabel tidak valid"]);
+    exit();
 }
+ 
+echo json_encode(["success" => (bool)$ok]);
 ?>
