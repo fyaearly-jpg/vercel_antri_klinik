@@ -18,6 +18,14 @@ if (!$cookie_data || ($role !== 'petugas' && $role !== 'admin' && $role !== 'sta
 }
 
 $nama_petugas = $cookie_data['nama'];
+
+$data_grafik = [];
+$labels = [];
+$res = mysqli_query($koneksi, "SELECT poli, COUNT(*) as total FROM antrian WHERE DATE(created_at) = '$hari_ini' GROUP BY poli");
+while($row = mysqli_fetch_assoc($res)) {
+    $labels[] = $row['poli'];
+    $data_grafik[] = $row['total'];
+}
 ?>
 <!DOCTYPE html>
 <html lang="id">

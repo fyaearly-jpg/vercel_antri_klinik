@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -30,31 +31,28 @@
     <script>
         let nomorLama = "";
 
-        function updateDisplay() {
-            fetch('get_antrean_sekarang.php')
-                .then(response => response.json())
-                .then(data => {
-                    const elNomor = document.getElementById('display-nomor');
-                    const elPoli = document.getElementById('display-poli');
-
-                    // Jika ada perubahan nomor, beri efek animasi dikit
-                    if (data.nomor_antrian !== nomorLama) {
-                        elNomor.innerText = data.nomor_antrian;
-                        elPoli.innerText = data.poli;
-                        
-                        // Efek kedip pas ganti nomor
-                        elNomor.classList.add('scale-110', 'text-emerald-500');
-                        setTimeout(() => {
-                            elNomor.classList.remove('scale-110', 'text-emerald-500');
-                        }, 1000);
-                        
-                        nomorLama = data.nomor_antrian;
-                    }
-                });
+                // Tambahkan logika ini pada bagian script di display.php
+        function panggilAntrean(nomor, poli) {
+            const teks = `Nomor antrean ${nomor}, silakan menuju ke ${poli}`;
+            const utterance = new SpeechSynthesisUtterance(teks);
+            utterance.lang = 'id-ID'; // Menggunakan suara Bahasa Indonesia
+            utterance.rate = 0.8;    // Kecepatan bicara agak lambat agar jelas
+            window.speechSynthesis.speak(utterance);
         }
 
-        // Cek data setiap 2 detik
-        setInterval(updateDisplay, 2000);
+        // Logika untuk mendeteksi perubahan status (Polling)
+        setInterval(() => {
+            fetch('ambil_antrean_terbaru.php')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.nomor_antrian !== window.nomorTerakhir) {
+                        panggilAntrean(data.nomor_antrian, data.poli);
+                        window.nomorTerakhir = data.nomor_antrian;
+                        // Update UI Display di sini
+                        document.getElementById('nomor-display').innerText = data.nomor_antrian;
+                    }
+                });
+        }, 3000);
     </script>
 </body>
 </html>
