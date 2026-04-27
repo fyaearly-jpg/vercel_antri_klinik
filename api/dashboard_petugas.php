@@ -2,28 +2,26 @@
 // api/dashboard_petugas.php
 include 'koneksi.php';
 
-// 1. Ambil data dari Cookie untuk proteksi (seperti yang sudah dibahas sebelumnya)
+// 1. Ambil data dari Cookie untuk proteksi
 $cookie_raw = $_COOKIE['user_session'] ?? null;
 $cookie_data = $cookie_raw ? json_decode(base64_decode($cookie_raw), true) : null;
+
+// Logika Proteksi: Izinkan jika role adalah 'petugas' atau 'admin'
 $role = isset($cookie_data['role']) ? strtolower($cookie_data['role']) : '';
 
-if (!$cookie_data || ($role !== 'petugas' && $role !== 'admin' && $role !== 'staff')) {
+if (!$cookie_data || ($role !== 'petugas' && $role !== 'admin')) {
     header("Location: /login");
     exit();
 }
 
 $nama_petugas = $cookie_data['nama'];
 
-// --- PERBAIKAN ERROR START ---
-
-// 2. Definisikan variabel $hari_ini agar tidak "Undefined variable"
+// 2. Persiapan Data Grafik (PERBAIKAN ERROR)
 $hari_ini = date('Y-m-d');
-
-// 3. Ambil data untuk Grafik
-// Pastikan nama kolom di database adalah 'poli'. Jika di DB kamu namanya 'nama_poli', ganti di bawah ini.
 $labels = [];
 $data_grafik = [];
 
+// Query untuk menghitung jumlah antrean per poli hari ini
 $query_grafik = "SELECT poli, COUNT(*) as total 
                  FROM antrian 
                  WHERE DATE(created_at) = '$hari_ini' 
@@ -31,128 +29,101 @@ $query_grafik = "SELECT poli, COUNT(*) as total
 
 $res = mysqli_query($koneksi, $query_grafik);
 
-if ($res) {
+if ($res && mysqli_num_rows($res) > 0) {
     while($row = mysqli_fetch_assoc($res)) {
-        $labels[] = $row['poli'];
+        $labels[] = $row['poli'] ?: 'Umum'; // Fallback jika poli kosong
         $data_grafik[] = (int)$row['total'];
     }
-}
-
-// Jika data kosong, beri nilai default agar grafik tidak error di JS
-if (empty($labels)) {
-    $labels = ['Belum Ada Data'];
+} else {
+    // Data default jika belum ada antrean hari ini
+    $labels = ['Belum ada antrean'];
     $data_grafik = [0];
 }
 
-// --- PERBAIKAN ERROR END ---
+// 3. Ambil total antrean hari ini untuk widget statistik
+$query_total = mysqli_query($koneksi, "SELECT COUNT(*) as total FROM antrian WHERE DATE(created_at) = '$hari_ini'");
+$total_hari_ini = mysqli_fetch_assoc($query_total)['total'] ?? 0;
 ?>
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Petugas | Digital Clinic</title>
+    <title>Dashboard Petugas - Klinik Digital</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
-    
-    <style>
-        body { font-family: 'Poppins', sans-serif; background-color: #f8fafc; }
-        .glass-card { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); }
-    </style>
 </head>
-<body class="min-h-screen p-4 md:p-10">
+<body class="bg-gray-50 font-sans">
 
-    <div class="max-w-6xl mx-auto">
-        
-        <div class="flex flex-col md:flex-row justify-between items-center mb-10 bg-white p-8 rounded-[2rem] shadow-sm border border-slate-200 gap-6">
-            <div class="flex items-center gap-5">
-                <div class="w-16 h-16 bg-emerald-500 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-emerald-200">
-                    <i class="fas fa-user-md text-3xl"></i>
+    <nav class="bg-white shadow-sm border-b border-gray-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex items-center gap-2">
+                    <div class="bg-blue-600 p-2 rounded-lg">
+                        <i class="fas fa-clinic-medical text-white"></i>
+                    </div>
+                    <span class="text-xl font-bold text-gray-800 tracking-tight">Klinik<span class="text-blue-600">Digital</span></span>
                 </div>
-                <div>
-                    <h1 class="text-2xl md:text-3xl font-bold text-slate-800">Halo, <?php echo htmlspecialchars($nama_user); ?>!</h1>
-                    <p class="text-slate-500">Selamat bertugas di <span class="text-emerald-600 font-bold uppercase tracking-wider text-sm"><?php echo $role_user; ?> Panel</span></p>
+                <div class="flex items-center gap-4">
+                    <div class="text-right hidden sm:block">
+                        <p class="text-sm font-medium text-gray-900"><?php echo htmlspecialchars($nama_petugas); ?></p>
+                        <p class="text-xs text-gray-500 capitalize"><?php echo $role; ?></p>
+                    </div>
+                    <a href="/logout" class="bg-gray-100 hover:bg-red-50 text-gray-600 hover:text-red-600 p-2 rounded-full transition-all">
+                        <i class="fas fa-power-off"></i>
+                    </a>
                 </div>
-            </div>
-            <a href="logout.php" class="w-full md:w-auto bg-red-500 hover:bg-red-600 text-white px-8 py-3 rounded-2xl font-bold transition-all shadow-lg shadow-red-100 flex items-center justify-center gap-2 active:scale-95">
-                <i class="fas fa-sign-out-alt"></i> Keluar Sistem
-            </a>
-        </div>
-
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
-            <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
-                <p class="text-slate-400 text-xs font-bold uppercase tracking-widest mb-1">Total Antrean</p>
-                <h3 class="text-3xl font-black text-slate-800"><?php echo $total_pasien; ?></h3>
-            </div>
-            <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
-                <p class="text-slate-400 text-xs font-bold uppercase tracking-widest mb-1">Sudah Dilayani</p>
-                <h3 class="text-3xl font-black text-emerald-500"><?php echo $total_selesai; ?></h3>
-            </div>
-            <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
-                <p class="text-slate-400 text-xs font-bold uppercase tracking-widest mb-1">Tanggal</p>
-                <h3 class="text-lg font-bold text-slate-700"><?php echo date('d M Y'); ?></h3>
-            </div>
-            <div class="bg-emerald-600 p-6 rounded-3xl shadow-lg shadow-emerald-100 text-white">
-                <p class="text-emerald-200 text-xs font-bold uppercase tracking-widest mb-1">Status Server</p>
-                <h3 class="text-lg font-bold flex items-center gap-2">
-                    <span class="w-2 h-2 bg-white rounded-full animate-ping"></span> Online
-                </h3>
             </div>
         </div>
+    </nav>
 
-        <div class="grid md:grid-cols-2 gap-8 mb-10">
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="mb-8">
+            <h1 class="text-2xl font-bold text-gray-900">Selamat Datang, <?php echo htmlspecialchars($nama_petugas); ?> 👋</h1>
+            <p class="text-gray-500">Berikut adalah ringkasan antrean pasien untuk hari ini.</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             
-            <a href="monitoring.php" class="group bg-white p-8 rounded-[2.5rem] shadow-xl shadow-slate-200/50 hover:shadow-emerald-200/50 transition-all border border-slate-100 hover:-translate-y-2">
-                <div class="w-16 h-16 bg-emerald-100 rounded-2xl flex items-center justify-center mb-6 text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white transition-all duration-300">
-                    <i class="fas fa-chalkboard-user text-2xl"></i>
+            <div class="lg:col-span-1 space-y-6">
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                    <div class="flex items-center gap-4">
+                        <div class="bg-blue-100 text-blue-600 p-4 rounded-xl">
+                            <i class="fas fa-users text-2xl"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500 font-medium">Total Antrean Hari Ini</p>
+                            <h3 class="text-3xl font-bold text-gray-900"><?php echo $total_hari_ini; ?></h3>
+                        </div>
+                    </div>
                 </div>
-                <h2 class="text-2xl font-bold text-slate-800">Monitoring Antrean</h2>
-                <p class="text-slate-500 mt-3 leading-relaxed">Panggil nomor antrean, kelola status pelayanan, dan lihat daftar tunggu pasien.</p>
-                <div class="mt-8 flex items-center text-emerald-600 font-bold group-hover:gap-4 gap-2 transition-all">
-                    <span>Kelola Sekarang</span>
-                    <i class="fas fa-arrow-right"></i>
-                </div>
-            </a>
 
-            <a href="display.php" target="_blank" class="group bg-white p-8 rounded-[2.5rem] shadow-xl shadow-slate-200/50 hover:shadow-blue-200/50 transition-all border border-slate-100 hover:-translate-y-2">
-                <div class="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center mb-6 text-blue-500 group-hover:bg-blue-500 group-hover:text-white transition-all duration-300">
-                    <i class="fas fa-desktop text-2xl"></i>
+                <div class="bg-gradient-to-br from-blue-600 to-blue-700 p-6 rounded-2xl shadow-lg text-white">
+                    <h4 class="font-bold mb-2">Panggil Antrean?</h4>
+                    <p class="text-blue-100 text-sm mb-4">Mulai memproses antrean pasien yang sedang menunggu.</p>
+                    <a href="/monitoring" class="bg-white text-blue-600 px-4 py-2 rounded-lg text-sm font-bold inline-block hover:bg-blue-50 transition-colors">
+                        Buka Monitoring <i class="fas fa-arrow-right ml-2"></i>
+                    </a>
                 </div>
-                <h2 class="text-2xl font-bold text-slate-800">Layar Display TV</h2>
-                <p class="text-slate-500 mt-3 leading-relaxed">Tampilkan nomor antrean secara real-time untuk layar monitor di ruang tunggu.</p>
-                <div class="mt-8 flex items-center text-blue-600 font-bold group-hover:gap-4 gap-2 transition-all">
-                    <span>Buka Layar TV</span>
-                    <i class="fas fa-external-link-alt"></i>
+            </div>
+
+            <div class="lg:col-span-2">
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 h-full">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="font-bold text-gray-800"><i class="fas fa-chart-bar text-blue-600 mr-2"></i> Distribusi Pasien Per Poli</h3>
+                        <span class="text-xs font-medium bg-gray-100 text-gray-500 px-3 py-1 rounded-full"><?php echo date('d M Y'); ?></span>
+                    </div>
+                    <div class="relative" style="height: 300px;">
+                        <canvas id="antrianChart"></canvas>
+                    </div>
                 </div>
-            </a>
+            </div>
 
         </div>
+    </main>
 
-        <div class="bg-white p-8 md:p-12 rounded-[3rem] shadow-xl border border-slate-100">
-            <div class="flex items-center justify-between mb-8">
-                <div>
-                    <h2 class="text-2xl font-bold text-slate-800">Statistik Kunjungan Poli</h2>
-                    <p class="text-slate-500">Distribusi pasien per departemen hari ini</p>
-                </div>
-                <button onclick="updateChart()" class="w-10 h-10 bg-slate-50 rounded-full flex items-center justify-center text-slate-400 hover:text-emerald-500 hover:bg-emerald-50 transition-all">
-                    <i class="fas fa-sync-alt"></i>
-                </button>
-            </div>
-            
-            <div class="h-[350px]">
-                <canvas id="chartPoli"></canvas>
-            </div>
-        </div>
-
-        <p class="text-center text-slate-400 mt-12 text-sm">
-            &copy; 2026 Digital Clinic System &bull; Universitas Sebelas Maret Project
-        </p>
-
-    </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         const ctx = document.getElementById('antrianChart').getContext('2d');
         new Chart(ctx, {
@@ -160,21 +131,30 @@ if (empty($labels)) {
             data: {
                 labels: <?php echo json_encode($labels); ?>,
                 datasets: [{
-                    label: 'Jumlah Antrean Hari Ini',
+                    label: 'Jumlah Pasien',
                     data: <?php echo json_encode($data_grafik); ?>,
-                    backgroundColor: 'rgba(59, 130, 246, 0.8)',
-                    borderColor: 'rgba(59, 130, 246, 1)',
-                    borderWidth: 1
+                    backgroundColor: 'rgba(37, 99, 235, 0.7)',
+                    hoverBackgroundColor: 'rgba(37, 99, 235, 1)',
+                    borderRadius: 8,
+                    borderSkipped: false,
                 }]
             },
             options: {
                 responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
                 scales: {
-                    y: { beginAtZero: true, ticks: { stepSize: 1 } }
+                    x: { grid: { display: false } },
+                    y: { 
+                        beginAtZero: true,
+                        ticks: { stepSize: 1 },
+                        grid: { borderDash: [5, 5] }
+                    }
                 }
             }
         });
     </script>
-
 </body>
 </html>
