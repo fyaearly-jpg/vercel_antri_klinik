@@ -41,7 +41,7 @@ $query_aktif = "SELECT antrian.*, pasien.nama_pasien
                 WHERE DATE(antrian.created_at) = '$hari_ini' 
                 AND antrian.status != 'selesai' 
                 ORDER BY antrian.created_at ASC";
-$sql_aktif = mysqli_query($conn, $query_aktif);
+$sql_aktif = mysqli_query($koneksi, $query_aktif);
 
 // Query Riwayat (Selesai)
 $query_riwayat = "SELECT antrian.*, pasien.nama_pasien 
@@ -50,7 +50,7 @@ $query_riwayat = "SELECT antrian.*, pasien.nama_pasien
                   WHERE DATE(antrian.created_at) = '$hari_ini' 
                   AND antrian.status = 'selesai' 
                   ORDER BY antrian.updated_at DESC";
-$sql_riwayat = mysqli_query($conn, $query_riwayat);
+$sql_riwayat = mysqli_query($koneksi, $query_riwayat);
 ?>
 
 <!DOCTYPE html>

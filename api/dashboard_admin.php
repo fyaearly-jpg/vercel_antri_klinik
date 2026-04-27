@@ -1,22 +1,20 @@
 <?php
-// Di dashboard_admin.php, dashboard_pasien.php, dll.
 require_once "session_config.php";
 
-if (!isset($_SESSION['role'])) {
+if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
     header("Location: /login");
     exit();
 }
-?>
 
-// Ambil data dari session sesuai variabel di cek_login.php
-$nama_admin = $_SESSION['nama']; // Menggunakan 'nama_lengkap' dari tabel petugas
+// Pastikan include koneksi jika diperlukan atau gunakan variabel dari session_config
+include "koneksi.php"; 
 
-// Query untuk statistik dashboard
+$nama_admin = $_SESSION['nama']; 
+
 $total_pasien = mysqli_fetch_assoc(mysqli_query($koneksi, "SELECT COUNT(*) as total FROM pasien"))['total'];
 $total_antrian = mysqli_fetch_assoc(mysqli_query($koneksi, "SELECT COUNT(*) as total FROM antrian"))['total'];
 $total_petugas = mysqli_fetch_assoc(mysqli_query($koneksi, "SELECT COUNT(*) as total FROM petugas"))['total'];
 ?>
-
 <!DOCTYPE html>
 <html lang="id">
 <head>

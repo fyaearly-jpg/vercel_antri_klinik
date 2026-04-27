@@ -1,9 +1,9 @@
 <?php
-include "koneksi.php";
+include "koneksi.php"; // Ini mendefinisikan $koneksi
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $email = mysqli_real_escape_string($koneksi, $_POST['email']);
-    $nama = mysqli_real_escape_string($koneksi, $_POST['nama']); // Pastikan name="nama" di register.php
+    $nama = mysqli_real_escape_string($koneksi, $_POST['nama']); 
     $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
     $role = 'pasien';
 

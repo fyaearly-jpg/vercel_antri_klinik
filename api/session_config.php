@@ -12,8 +12,12 @@ if (!isset($koneksi)) {
     mysqli_real_connect($koneksi, $host, $user, $pass, $db, $port, NULL, MYSQLI_CLIENT_SSL);
 }
 
-// Gunakan koneksi yang sudah ada untuk session
-$db_session = $koneksi;
+// WAJIB: Buat tabel sessions jika belum ada
+mysqli_query($koneksi, "CREATE TABLE IF NOT EXISTS sessions (
+    session_id VARCHAR(128) NOT NULL PRIMARY KEY,
+    data TEXT NOT NULL,
+    last_activity INT NOT NULL
+)");
 
 class DbSessionHandler implements SessionHandlerInterface {
     private $db;
@@ -45,9 +49,9 @@ class DbSessionHandler implements SessionHandlerInterface {
 }
 
 if (!session_id()) {
-    $handler = new DbSessionHandler($db_session);
+    $handler = new DbSessionHandler($koneksi);
     session_set_save_handler($handler, true);
-    ini_set('session.cookie_secure', 1); // Wajib untuk HTTPS Vercel
+    ini_set('session.cookie_secure', 1); 
     ini_set('session.cookie_httponly', 1);
     ini_set('session.cookie_samesite', 'Lax');
     session_start();

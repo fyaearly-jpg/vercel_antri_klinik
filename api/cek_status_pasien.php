@@ -5,11 +5,8 @@ include 'koneksi.php';
 $id_pasien = $_SESSION['id_pasien'];
 $hari_ini = date('Y-m-d');
 
-// Ambil antrean terakhir milik pasien login hari ini
-$query = mysqli_query($conn, "SELECT nomor_antrian, status FROM antrian 
-                              WHERE id_pasien = '$id_pasien' 
-                              AND DATE(created_at) = '$hari_ini' 
-                              ORDER BY id DESC LIMIT 1");
+// Ganti baris 13 menjadi:
+$query_antrian = mysqli_query($koneksi, "SELECT * FROM antrian WHERE id_pasien = '$id_pasien' ORDER BY id DESC LIMIT 1");
 
 $data = mysqli_fetch_assoc($query);
 
