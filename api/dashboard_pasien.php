@@ -16,8 +16,7 @@ $id_user = $cookie_data['id'];
 $nama_user = $cookie_data['nama'];
 $hari_ini = date('Y-m-d');
 
-// 3. Ambil data antrean terbaru pasien ini hari ini
-$query = mysqli_query($koneksi, "SELECT * FROM antrian WHERE id_pasien = '$id_user' AND DATE(created_at) = '$hari_ini' ORDER BY id DESC LIMIT 1");
+$query = mysqli_query($koneksi, "SELECT * FROM antrian WHERE id_pasien = '$id_user' ORDER BY id DESC LIMIT 1");
 $data_antrian = mysqli_fetch_assoc($query);
 
 // Cek apakah data antrean ada
