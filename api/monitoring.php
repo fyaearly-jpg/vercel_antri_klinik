@@ -15,20 +15,20 @@ $hari_ini = date('Y-m-d');
 // 1. Logika Panggil
 if (isset($_GET['panggil'])) {
     $id = $_GET['panggil'];
-    mysqli_query($conn, "UPDATE antrian SET status = 'dipanggil', updated_at = NOW() WHERE id = '$id'");
+    mysqli_query($koenksi, "UPDATE antrian SET status = 'dipanggil', updated_at = NOW() WHERE id = '$id'");
     header("Location: monitoring.php");
 }
 
 // 2. Logika Selesai
 if (isset($_GET['selesai'])) {
     $id = $_GET['selesai'];
-    mysqli_query($conn, "UPDATE antrian SET status = 'selesai', updated_at = NOW() WHERE id = '$id'");
+    mysqli_query($koneksi, "UPDATE antrian SET status = 'selesai', updated_at = NOW() WHERE id = '$id'");
     header("Location: monitoring.php");
 }
 
 // 3. Logika Reset (Hapus antrean hari ini saja)
 if (isset($_GET['reset'])) {
-    mysqli_query($conn, "DELETE FROM antrian WHERE DATE(created_at) = '$hari_ini'");
+    mysqli_query($koneksi, "DELETE FROM antrian WHERE DATE(created_at) = '$hari_ini'");
     header("Location: monitoring.php");
 }
 

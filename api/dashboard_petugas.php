@@ -13,10 +13,10 @@ $role_user = $_SESSION['role'];
 $hari_ini = date('Y-m-d');
 
 // 2. QUERY SINGKAT UNTUK COUNTER WIDGET (Opsional tapi keren)
-$q_total = mysqli_query($conn, "SELECT COUNT(*) as total FROM antrian WHERE DATE(created_at) = '$hari_ini'");
+$q_total = mysqli_query($koneksi, "SELECT COUNT(*) as total FROM antrian WHERE DATE(created_at) = '$hari_ini'");
 $total_pasien = mysqli_fetch_assoc($q_total)['total'];
 
-$q_selesai = mysqli_query($conn, "SELECT COUNT(*) as total FROM antrian WHERE DATE(created_at) = '$hari_ini' AND status = 'selesai'");
+$q_selesai = mysqli_query($koneksi, "SELECT COUNT(*) as total FROM antrian WHERE DATE(created_at) = '$hari_ini' AND status = 'selesai'");
 $total_selesai = mysqli_fetch_assoc($q_selesai)['total'];
 ?>
 

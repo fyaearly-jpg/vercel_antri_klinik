@@ -78,7 +78,7 @@ if (!isset($_SESSION['role']) || ($_SESSION['role'] !== 'admin' && $_SESSION['ro
 
             <div class="overflow-y-auto pr-2 space-y-3 custom-scrollbar" style="max-height: 450px;">
                 <?php
-                $q_feedback = mysqli_query($conn, "SELECT * FROM feedback ORDER BY created_at DESC");
+                $q_feedback = mysqli_query($koneksi, "SELECT * FROM feedback ORDER BY created_at DESC");
                 
                 if (mysqli_num_rows($q_feedback) > 0) {
                     while ($f = mysqli_fetch_assoc($q_feedback)) {
