@@ -1,25 +1,22 @@
 <?php
 // api/dashboard_pasien.php
 include 'koneksi.php';
-include 'auth_helper.php';
 
-$user = get_user_session();
+// 1. Ambil data dari Cookie
+$cookie_data = isset($_COOKIE['user_session']) ? json_decode(base64_decode($_COOKIE['user_session']), true) : null;
 
-if (!$user) {
-    echo json_encode(['status' => 'error', 'message' => 'Belum login']);
+// 2. Jika tidak ada cookie, tendang ke login
+if (!$cookie_data || $cookie_data['role'] !== 'pasien') {
+    header("Location: /login");
     exit();
 }
 
-$id_pasien = $user['id']; // Ambil ID dari Cookie
+$id_user = $cookie_data['id'];
+$nama_user = $cookie_data['nama'];
 
-// Jalankan query seperti biasa
-$sql = "SELECT * FROM antrian WHERE id_pasien = '$id_pasien' ORDER BY id DESC LIMIT 1";
-$query_antrian = mysqli_query($koneksi, $sql);
-$data = mysqli_fetch_assoc($query_antrian);
-
-header('Content-Type: application/json');
-echo json_encode($data ?: ['status' => 'none', 'nomor_antrian' => '-']);
-
+// 3. Ambil data antrean terbaru pasien ini
+$query = mysqli_query($koneksi, "SELECT * FROM antrian WHERE id_pasien = '$id_user' ORDER BY id DESC LIMIT 1");
+$data_antrian = mysqli_fetch_assoc($query);
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -33,25 +30,30 @@ echo json_encode($data ?: ['status' => 'none', 'nomor_antrian' => '-']);
         <h1 class="text-xl font-bold text-emerald-600">Klinik Sehat</h1>
         <div class="flex items-center gap-4">
             <span class="text-slate-600">Halo, <strong><?php echo htmlspecialchars($nama_user); ?></strong></span>
-            <a href="/logout" class="text-red-500 font-semibold">Keluar</a>
+            <a href="logout.php" class="text-red-500 font-semibold">Keluar</a>
         </div>
     </nav>
+    
     <main class="container mx-auto p-6">
         <div class="bg-white rounded-3xl shadow-xl p-8 max-w-2xl mx-auto">
             <h2 class="text-2xl font-bold mb-6 text-slate-800">Status Antrean Anda</h2>
+            
             <?php if ($data_antrian): ?>
-                <div class="bg-emerald-50 border-2 border-emerald-100 rounded-2xl p-6 text-center">
-                    <p class="text-emerald-600 font-medium uppercase tracking-wider text-sm">Nomor Antrean</p>
-                    <h3 class="text-6xl font-black text-emerald-700 my-2"><?php echo $data_antrian['nomor_antrian']; ?></h3>
+                <div class="text-center bg-emerald-50 p-6 rounded-2xl border-2 border-emerald-100">
+                    <p class="text-emerald-600 font-medium">Nomor Antrean:</p>
+                    <h3 class="text-5xl font-black text-emerald-700 my-2">
+                        <?php echo $data_antrian['nomor_antrian']; ?>
+                    </h3>
                     <p class="text-slate-500">Poli: <?php echo $data_antrian['poli']; ?></p>
-                    <div class="mt-4 inline-block px-4 py-1 rounded-full text-sm font-bold 
-                        <?php echo $data_antrian['status'] == 'menunggu' ? 'bg-orange-100 text-orange-600' : 'bg-blue-100 text-blue-600'; ?>">
+                    <span class="inline-block mt-4 px-4 py-1 rounded-full text-sm font-bold 
+                        <?php echo $data_antrian['status'] == 'dipanggil' ? 'bg-orange-500 text-white' : 'bg-emerald-500 text-white'; ?>">
                         <?php echo strtoupper($data_antrian['status']); ?>
-                    </div>
+                    </span>
                 </div>
             <?php else: ?>
                 <div class="text-center py-10">
                     <p class="text-slate-400">Anda belum memiliki antrean aktif hari ini.</p>
+                    <a href="/ambil_antrean" class="mt-4 inline-block bg-emerald-600 text-white px-6 py-2 rounded-xl">Ambil Antrean</a>
                 </div>
             <?php endif; ?>
         </div>
