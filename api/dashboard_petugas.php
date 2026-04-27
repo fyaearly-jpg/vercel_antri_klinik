@@ -4,7 +4,7 @@ include 'koneksi.php';
 
 $cookie_data = isset($_COOKIE['user_session']) ? json_decode(base64_decode($_COOKIE['user_session']), true) : null;
 
-// Proteksi Halaman: Cek apakah petugas atau admin
+// Izinkan petugas DAN admin untuk masuk ke dashboard petugas
 if (!$cookie_data || ($cookie_data['role'] !== 'petugas' && $cookie_data['role'] !== 'admin')) {
     header("Location: /login");
     exit();

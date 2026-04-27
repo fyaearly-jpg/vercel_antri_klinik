@@ -2,10 +2,10 @@
 // api/dashboard_admin.php
 include 'koneksi.php';
 
-// 1. Ambil data dari Cookie
+// 1. Baca Cookie
 $cookie_data = isset($_COOKIE['user_session']) ? json_decode(base64_decode($_COOKIE['user_session']), true) : null;
 
-// 2. Proteksi Halaman: Cek apakah login sebagai admin
+// 2. Cek apakah benar-benar Admin (Jika gagal, akan balik ke login)
 if (!$cookie_data || $cookie_data['role'] !== 'admin') {
     header("Location: /login");
     exit();
@@ -13,10 +13,9 @@ if (!$cookie_data || $cookie_data['role'] !== 'admin') {
 
 $nama_admin = $cookie_data['nama'];
 
-// 3. Ambil statistik untuk dashboard
+// 3. Ambil data statistik (Gunakan variabel $koneksi dari koneksi.php)
 $total_pasien = mysqli_fetch_assoc(mysqli_query($koneksi, "SELECT COUNT(*) as total FROM pasien"))['total'];
 $total_antrian = mysqli_fetch_assoc(mysqli_query($koneksi, "SELECT COUNT(*) as total FROM antrian"))['total'];
-$total_petugas = mysqli_fetch_assoc(mysqli_query($koneksi, "SELECT COUNT(*) as total FROM petugas"))['total'];
 ?>
 <!DOCTYPE html>
 <html lang="id">

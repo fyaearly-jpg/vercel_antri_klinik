@@ -1,9 +1,10 @@
 <?php
-session_start();
 include 'koneksi.php';
+$cookie_data = isset($_COOKIE['user_session']) ? json_decode(base64_decode($_COOKIE['user_session']), true) : null;
 
-if ($_SESSION['role'] !== 'admin' && $_SESSION['role'] !== 'super_admin') {
-    header("Location: index.php"); exit();
+if (!$cookie_data || $cookie_data['role'] !== 'admin') {
+    header("Location: login.php");
+    exit();
 }
 
 $query = mysqli_query($conn, "SELECT * FROM petugas ORDER BY role ASC");

@@ -1,13 +1,16 @@
 <?php
-session_start();
+// api/monitoring.php
 include 'koneksi.php';
 
-// Proteksi: Hanya petugas/admin
-if (!isset($_SESSION['role']) || $_SESSION['role'] === 'pasien') {
-    header("Location: index.php");
+// Ambil data dari Cookie
+$cookie_data = isset($_COOKIE['user_session']) ? json_decode(base64_decode($_COOKIE['user_session']), true) : null;
+
+// Izinkan petugas dan admin
+if (!$cookie_data || ($cookie_data['role'] !== 'admin' && $cookie_data['role'] !== 'petugas')) {
+    header("Location: login.php");
     exit();
 }
-
+// ... sisa kode query monitoring ...
 $hari_ini = date('Y-m-d');
 
 // --- LOGIKA AKSI ---
