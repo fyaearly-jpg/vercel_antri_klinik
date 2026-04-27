@@ -2,19 +2,31 @@
 // api/dashboard_petugas.php
 include 'koneksi.php';
 
-// 1. Ambil data dari Cookie untuk proteksi
+// 1. Ambil data dari Cookie
 $cookie_raw = $_COOKIE['user_session'] ?? null;
-$cookie_data = $cookie_raw ? json_decode(base64_decode($cookie_raw), true) : null;
 
-// Logika Proteksi: Izinkan jika role adalah 'petugas' atau 'admin'
-$role = isset($cookie_data['role']) ? strtolower($cookie_data['role']) : '';
-
-if (!$cookie_data || ($role !== 'petugas' && $role !== 'admin')) {
+// Jika tidak ada cookie, langsung pental ke login
+if (!$cookie_raw) {
     header("Location: /login");
     exit();
 }
 
+$cookie_data = json_decode(base64_decode($cookie_raw), true);
+$role = isset($cookie_data['role']) ? strtolower(trim($cookie_data['role'])) : '';
+
+// 2. LOGIKA PROTEKSI (Kunci utama agar tidak pental)
+// Izinkan 'petugas', 'admin', DAN 'staff' untuk melihat halaman ini
+$allowed_roles = ['petugas', 'admin', 'staff'];
+
+if (!in_array($role, $allowed_roles)) {
+    // Jika role tidak terdaftar di atas, pental!
+    header("Location: /login?error=unauthorized");
+    exit();
+}
+
 $nama_petugas = $cookie_data['nama'];
+
+// ... (lanjutkan ke query statistik dan HTML UI Anda)
 
 // 2. Persiapan Data Grafik (PERBAIKAN ERROR)
 $hari_ini = date('Y-m-d');

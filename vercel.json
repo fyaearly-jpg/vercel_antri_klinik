@@ -18,4 +18,5 @@
     { "src": "/kelola_petugas", "dest": "/api/kelola_petugas.php" },
     { "src": "/(.*)", "dest": "/$1" }
   ]
+  
 }
