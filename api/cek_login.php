@@ -16,27 +16,21 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $query_petugas = mysqli_query($koneksi, "SELECT * FROM petugas WHERE email = '$email'");
     $user = mysqli_fetch_assoc($query_petugas);
 
-    
     if ($user && password_verify($password, $user['password'])) {
-        $current_role = strtolower($user['role']); // Ambil role dari DB dan kecilkan hurufnya
-        
         $session_data = [
             'id'    => $user['id'],
             'nama'  => $user['nama_lengkap'],
-            'role'  => $current_role
+            'role'  => $user['role']
         ];
         
+        // Simpan data ke Cookie (Durasi 1 jam)
+        // Parameter: nama, nilai, expired, path, domain, secure, httponly
         setcookie("user_session", base64_encode(json_encode($session_data)), time() + 3600, "/", "", true, true);
         
-        // Redirect berdasarkan role yang ada di CSV
-        if ($current_role === 'admin') {
-            header("Location: /dashboard_admin");
-        } else {
-            // Jika di CSV tulisannya 'staff', dia akan masuk ke dashboard_petugas
-            header("Location: /dashboard_petugas");
-        }
+        header("Location: /dashboard_admin"); 
         exit();
     }
+
     // 4. Cek di tabel pasien jika data petugas tidak ditemukan
     $query_pasien = mysqli_query($koneksi, "SELECT * FROM pasien WHERE email = '$email'");
     $pasien = mysqli_fetch_assoc($query_pasien);
