@@ -9,9 +9,11 @@
     { "src": "/login", "dest": "/api/login.php" },
     { "src": "/register", "dest": "/api/register.php" },
     { "src": "/cek_login", "dest": "/api/cek_login.php" },
-    { "src": "/proses_register", "dest": "/api/proses_register.php" },
     { "src": "/dashboard_pasien", "dest": "/api/dashboard_pasien.php" },
     { "src": "/dashboard_petugas", "dest": "/api/dashboard_petugas.php" },
+    
+    { "src": "/get_(.*)", "dest": "/api/get_$1.php" },
+    
     { "src": "/(.*)", "dest": "/$1" }
   ]
 }
