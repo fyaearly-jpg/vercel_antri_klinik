@@ -7,11 +7,15 @@
   "routes": [
     {
       "src": "/api/(.*)",
+      "dest": "/api/$1"
+    },
+    {
+      "src": "/(login|register|dashboard_pasien|dashboard_petugas)",
       "dest": "/api/$1.php"
     },
     {
       "src": "/(.*)",
-      "dest": "/$1.php"
+      "dest": "/$1"
     }
   ]
 }
