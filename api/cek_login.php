@@ -27,16 +27,18 @@ if (isset($_POST['email'])) {
     $q_pasien = mysqli_query($koneksi, "SELECT * FROM pasien WHERE email='$email'");
     $d_pasien = mysqli_fetch_assoc($q_pasien);
 
+    // Ganti bagian akhir cek_login.php kamu jadi begini:
     if ($d_pasien && password_verify($password, $d_pasien['password'])) {
         $_SESSION['role'] = 'pasien';
         $_SESSION['nama_pasien'] = $d_pasien['nama_pasien'];
         $_SESSION['id_pasien'] = $d_pasien['id'];
         
-        header("Location: /dashboard_pasien"); // Pakai / agar lewat vercel.json
+        session_write_close(); // PENTING: Simpan session sebelum pindah
+        header("Location: /dashboard_pasien"); 
         exit();
     } else {
-        // Jika tidak ketemu di petugas maupun pasien
-        echo "<script>alert('Email atau Password Salah!'); window.location.href='/login';</script>";
+        // Gunakan URL lengkap atau path yang terdaftar di vercel.json
+        header("Location: /login?error=1");
         exit();
     }
 } else {
