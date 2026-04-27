@@ -1,26 +1,30 @@
 <?php
 // api/dashboard_pasien.php
 include 'koneksi.php';
+include 'api_bps.php'; // File BPS yang Anda buat sebelumnya
 
 // 1. Ambil data dari Cookie
 $cookie_raw = $_COOKIE['user_session'] ?? null;
 $cookie_data = $cookie_raw ? json_decode(base64_decode($cookie_raw), true) : null;
 
-// 2. Jika tidak ada cookie, tendang ke login
 if (!$cookie_data || $cookie_data['role'] !== 'pasien') {
     header("Location: /login");
     exit();
 }
 
-$id_user = $cookie_data['id'];
-$nama_user = $cookie_data['nama'];
+$id_pasien = $cookie_data['id'];
 $hari_ini = date('Y-m-d');
 
-$query = mysqli_query($koneksi, "SELECT * FROM antrian WHERE id_pasien = '$id_user' ORDER BY id DESC LIMIT 1");
-$data_antrian = mysqli_fetch_assoc($query);
+// 2. Ambil DATA ANTREAN SAYA
+$q_saya = mysqli_query($koneksi, "SELECT * FROM antrian WHERE id_pasien = '$id_pasien' AND DATE(created_at) = '$hari_ini' ORDER BY id DESC LIMIT 1");
+$antrean_saya = mysqli_fetch_assoc($q_saya);
 
-// Cek apakah data antrean ada
-$punya_antrean = $data_antrian ? true : false;
+// 3. Ambil DATA SEDANG DILAYANI (Status 'dipanggil')
+$q_layani = mysqli_query($koneksi, "SELECT nomor_antrean, poli FROM antrian WHERE status = 'dipanggil' AND DATE(created_at) = '$hari_ini' ORDER BY updated_at DESC LIMIT 1");
+$sedang_dilayani = mysqli_fetch_assoc($q_layani);
+
+// 4. Data BPS
+$data_bps = fetchBpsData(); // Fungsi dari api_bps.php
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -63,7 +67,7 @@ $punya_antrean = $data_antrian ? true : false;
                     
                     <span class="inline-block px-4 py-1 bg-emerald-100 text-emerald-700 rounded-full text-xs font-bold uppercase tracking-widest mb-4">Nomor Anda</span>
                     <div class="nomor-besar mb-2">
-                        <?php echo $data_antrian['nomor_antrian']; ?>
+                        <?php echo $data_antrian['nomor_antrean']; ?>
                     </div>
                     <p class="text-slate-500 font-medium mb-6">Poli Tujuan: <span class="text-slate-800 font-bold"><?php echo $data_antrian['poli']; ?></span></p>
                     
@@ -164,7 +168,7 @@ $punya_antrean = $data_antrian ? true : false;
         fetch('/api/ambil_antrean_terbaru.php')
             .then(res => res.json())
             .then(data => {
-                document.getElementById('no-terbaru').innerText = data.nomor_antrian;
+                document.getElementById('no-terbaru').innerText = data.nomor_antrean;
                 document.getElementById('poli-terbaru').innerText = data.poli;
             });
     }
@@ -190,7 +194,7 @@ $punya_antrean = $data_antrian ? true : false;
     }
 
     let statusTerakhir = 'menunggu';
-    const nomorAntrean = "<?php echo $punya_antrean ? $data_antrian['nomor_antrian'] : ''; ?>";
+    const nomorAntrean = "<?php echo $punya_antrean ? $data_antrian['nomor_antrean'] : ''; ?>";
     const poliAntrean = "<?php echo $punya_antrean ? $data_antrian['poli'] : ''; ?>";
 
     function cekStatus() {
