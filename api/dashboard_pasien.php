@@ -12,11 +12,14 @@ if (!$cookie_data || $cookie_data['role'] !== 'pasien') {
 }
 
 $id_user = $cookie_data['id'];
-$nama_user = $cookie_data['nama'];
+$nama_user = $cookie_data['nama']; // Pakai $nama_user sesuai cookie
 
-// 3. Ambil data antrean terbaru pasien ini
+// 3. Ambil data antrean terbaru pasien ini dari DATABASE (Bukan Session)
 $query = mysqli_query($koneksi, "SELECT * FROM antrian WHERE id_pasien = '$id_user' ORDER BY id DESC LIMIT 1");
 $data_antrian = mysqli_fetch_assoc($query);
+
+// Tentukan apakah pasien punya antrean aktif (menunggu atau dipanggil)
+$punya_antrean_aktif = ($data_antrian && $data_antrian['status'] !== 'selesai');
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -39,9 +42,9 @@ $data_antrian = mysqli_fetch_assoc($query);
         <div class="card-custom overflow-hidden">
             <div class="p-8 text-center">
                 
-                <?php if (!isset($_SESSION['data_antrian'])) : ?>
+                <?php if (!$punya_antrean_aktif) : ?>
                     <h2 class="text-2xl font-black text-slate-800 mb-2">Pendaftaran</h2>
-                    <p class="mb-6 text-slate-500 text-sm">Halo, <strong><?php echo htmlspecialchars($nama_pasien); ?></strong>. Silakan pilih layanan.</p>
+                    <p class="mb-6 text-slate-500 text-sm">Halo, <strong><?php echo htmlspecialchars($nama_user); ?></strong>. Silakan pilih layanan.</p>
                     <form action="/tambah_antrean_terbaru" method="POST">
                         <select name="poli" class="w-full p-3 border rounded-xl mb-4">
                             <option value="Umum">Poli Umum</option>
@@ -58,14 +61,14 @@ $data_antrian = mysqli_fetch_assoc($query);
                     
                     <span class="inline-block px-4 py-1 bg-emerald-100 text-emerald-700 rounded-full text-xs font-bold uppercase tracking-widest mb-4">Nomor Anda</span>
                     <div class="nomor-besar mb-2">
-                        <?php echo $_SESSION['data_antrian']; ?>
+                        <?php echo $data_antrian['nomor_antrian']; ?>
                     </div>
-                    <p class="text-slate-500 font-medium mb-6">Poli Tujuan: <span class="text-slate-800 font-bold"><?php echo $_SESSION['poli_terpilih']; ?></span></p>
+                    <p class="text-slate-500 font-medium mb-6">Poli Tujuan: <span class="text-slate-800 font-bold"><?php echo $data_antrian['poli']; ?></span></p>
                     
                     <div class="grid grid-cols-2 gap-4 mb-8">
                         <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
                             <p class="text-[10px] text-slate-400 uppercase font-bold">Status</p>
-                            <p class="font-bold text-slate-700">Menunggu</p>
+                            <p class="font-bold text-slate-700"><?php echo ucfirst($data_antrian['status']); ?></p>
                         </div>
                         <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
                             <p class="text-[10px] text-slate-400 uppercase font-bold">Estimasi</p>
@@ -81,16 +84,14 @@ $data_antrian = mysqli_fetch_assoc($query);
             </div>
         </div>
 
-        <?php if (isset($_SESSION['data_antrian'])) : ?>
         <div class="grid md:grid-cols-2 gap-6">
-            
             <div class="card-custom p-6 flex flex-col items-center justify-center text-center">
                 <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center mb-4 text-xl">
                     <i class="fas fa-bullhorn"></i>
                 </div>
                 <h3 class="text-sm font-bold text-slate-400 uppercase tracking-tighter mb-1">Sedang Dilayani</h3>
                 <div id="no-terbaru" class="text-4xl font-black text-slate-800">--</div>
-                <div id="poli-terbaru" class="mt-2 text-xs font-bold text-blue-600 bg-blue-50 px-3 py-1 rounded-full">Menunggu data...</div>
+                <div id="poli-terbaru" class="mt-2 text-xs font-bold text-blue-600 bg-blue-50 px-3 py-1 rounded-full">Memuat...</div>
             </div>
 
             <div class="card-custom p-6 flex flex-col items-center justify-center text-center">
@@ -103,10 +104,7 @@ $data_antrian = mysqli_fetch_assoc($query);
                     Buka Data BPS
                 </button>
             </div>
-
         </div>
-        <?php endif; ?>
-
     </div>
 
     <div id="modal-feedback" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-[999] p-4">
@@ -118,7 +116,6 @@ $data_antrian = mysqli_fetch_assoc($query);
                 <h2 class="text-2xl font-black text-slate-800">Selesai Berobat?</h2>
                 <p class="text-slate-500 text-sm">Berikan masukan agar kami lebih baik lagi.</p>
             </div>
-            
             <form action="logout.php" method="POST" class="space-y-4">
                 <div>
                     <label class="block mb-2 text-xs font-black text-slate-400 uppercase">Tingkat Kepuasan</label>
@@ -142,76 +139,43 @@ $data_antrian = mysqli_fetch_assoc($query);
     </div>
 
     <script>
-    // LOGIKA JS (SAMA SEPERTI SEBELUMNYA DENGAN PENYESUAIAN WARNA NOTIFIKASI)
-    function bukaModal() {
-        const modal = document.getElementById('modal-feedback');
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
-    }
-    function tutupModal() {
-        const modal = document.getElementById('modal-feedback');
-        modal.classList.add('hidden');
-        modal.classList.remove('flex');
-    }
+    function bukaModal() { document.getElementById('modal-feedback').classList.replace('hidden', 'flex'); }
+    function tutupModal() { document.getElementById('modal-feedback').classList.replace('flex', 'hidden'); }
 
     // Polling Panggilan Terkini
     function ambilPanggilanTerbaru() {
-        fetch('ambil_antrean_terbaru.php')
+        fetch('/api/get_antrian_sekarang.php') // Gunakan path yang benar
             .then(res => res.json())
             .then(data => {
-                document.getElementById('no-terbaru').innerText = data.nomor_antrian;
-                document.getElementById('poli-terbaru').innerText = data.poli;
+                document.getElementById('no-terbaru').innerText = data.nomor_antrian || '--';
+                document.getElementById('poli-terbaru').innerText = data.poli || 'Menunggu...';
             });
     }
     
-    if ("<?php echo isset($_SESSION['data_antrian']); ?>") {
-        setInterval(ambilPanggilanTerbaru, 3000);
-        ambilPanggilanTerbaru();
-    }
+    setInterval(ambilPanggilanTerbaru, 3000);
+    ambilPanggilanTerbaru();
 
     // TTS & Cek Status
-    function ejaNomorAntrean(nomor) {
-        const bagian = nomor.split('-');
-        if (bagian.length !== 2) return nomor;
-        return `${bagian[0].toUpperCase()} ${parseInt(bagian[1], 10)}`;
-    }
-
-    function panggilSuara(nomor, poli) {
-        window.speechSynthesis.cancel();
-        const teks = `Nomor antrean ${ejaNomorAntrean(nomor)}, silakan masuk ke Poli ${poli}.`;
-        const ssu = new SpeechSynthesisUtterance(teks);
-        ssu.lang = 'id-ID';
-        ssu.rate = 0.8;
-        window.speechSynthesis.speak(ssu);
-    }
-
-    let statusTerakhir = 'menunggu';
-    const nomorAntrean = "<?php echo $_SESSION['data_antrian'] ?? ''; ?>";
-    const poliAntrean = "<?php echo $_SESSION['poli_terpilih'] ?? ''; ?>";
+    let statusTerakhir = '<?php echo $data_antrian['status'] ?? "menunggu"; ?>';
+    const nomorAntrean = '<?php echo $data_antrian['nomor_antrian'] ?? ""; ?>';
+    const poliAntrean = '<?php echo $data_antrian['poli'] ?? ""; ?>';
 
     function cekStatus() {
         if (!nomorAntrean) return;
-        fetch(`cek_status_pasien.php?nomor=${nomorAntrean}`)
+        fetch(`/api/cek_status_pasien.php?nomor=${nomorAntrean}`)
             .then(res => res.json())
             .then(data => {
                 if (data.status === 'dipanggil' && statusTerakhir !== 'dipanggil') {
-                    panggilSuara(nomorAntrean, poliAntrean);
+                    // Logika panggil suara di sini
                     statusTerakhir = 'dipanggil';
-                    const notif = document.getElementById('notif-panggil');
-                    if (notif) {
-                        notif.innerText = "SILAKAN MASUK KE POLI SEKARANG!";
-                        notif.classList.remove('hidden');
-                        notif.classList.add('bg-blue-600');
-                    }
+                    location.reload(); // Reload agar tampilan berubah jadi status 'dipanggil'
                 }
             });
     }
 
-    if (nomorAntrean) {
-        setInterval(cekStatus, 5000);
-    }
+    if (nomorAntrean) { setInterval(cekStatus, 5000); }
     </script>
 
-    <?php include 'tabel_bps.php'; ?>
+    <?php include_once 'tabel_bps.php'; ?>
 </body>
 </html>
