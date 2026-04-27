@@ -1,23 +1,18 @@
 <?php
-session_start();
+include "session_config.php";
 include "koneksi.php";
-
-// Proteksi Halaman: Pastikan hanya pasien yang bisa masuk
+ 
 if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'pasien') {
     header("Location: /login");
     exit();
 }
-
-// Ambil ID Pasien dari session yang dibuat di cek_login.php
-$id_pasien = $_SESSION['id_pasien'];
-$nama_user = $_SESSION['nama_pasien']; // Gunakan nama_pasien sesuai database
-
-// Query ambil data antrean milik pasien ini
-// Pastikan nama tabel adalah 'antrian' sesuai file SQL kamu
+ 
+$id_pasien  = $_SESSION['id_pasien'];
+$nama_user  = $_SESSION['nama_pasien'];
+ 
 $query_antrian = mysqli_query($koneksi, "SELECT * FROM antrian WHERE id_pasien = '$id_pasien' ORDER BY created_at DESC LIMIT 1");
-$data_antrian = mysqli_fetch_assoc($query_antrian);
+$data_antrian  = mysqli_fetch_assoc($query_antrian);
 ?>
-
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -33,11 +28,9 @@ $data_antrian = mysqli_fetch_assoc($query_antrian);
             <a href="/logout" class="text-red-500 font-semibold">Keluar</a>
         </div>
     </nav>
-
     <main class="container mx-auto p-6">
         <div class="bg-white rounded-3xl shadow-xl p-8 max-w-2xl mx-auto">
             <h2 class="text-2xl font-bold mb-6 text-slate-800">Status Antrean Anda</h2>
-            
             <?php if ($data_antrian): ?>
                 <div class="bg-emerald-50 border-2 border-emerald-100 rounded-2xl p-6 text-center">
                     <p class="text-emerald-600 font-medium uppercase tracking-wider text-sm">Nomor Antrean</p>
@@ -51,9 +44,6 @@ $data_antrian = mysqli_fetch_assoc($query_antrian);
             <?php else: ?>
                 <div class="text-center py-10">
                     <p class="text-slate-400">Anda belum memiliki antrean aktif hari ini.</p>
-                    <button class="mt-4 bg-emerald-600 text-white px-6 py-2 rounded-xl font-bold hover:bg-emerald-700 transition-all">
-                        Ambil Nomor Antrean
-                    </button>
                 </div>
             <?php endif; ?>
         </div>

@@ -1,19 +1,18 @@
 <?php
-session_start();
+include "session_config.php";
 include "koneksi.php";
  
-// Ambil input dari form
 $email    = $_POST['email'] ?? '';
 $password = $_POST['password'] ?? '';
  
-// Validasi input tidak kosong
 if (empty($email) || empty($password)) {
     header("Location: /login?error=1");
     exit();
 }
  
-// 1. Cek di Tabel Petugas (Admin & Staff)
-$email_safe  = mysqli_real_escape_string($koneksi, $email);
+$email_safe   = mysqli_real_escape_string($koneksi, $email);
+ 
+// 1. Cek Tabel Petugas
 $stmt_petugas = mysqli_query($koneksi, "SELECT * FROM petugas WHERE email = '$email_safe' LIMIT 1");
 $d_petugas    = mysqli_fetch_assoc($stmt_petugas);
  
@@ -34,7 +33,7 @@ if ($d_petugas && password_verify($password, $d_petugas['password'])) {
     }
 }
  
-// 2. Cek di Tabel Pasien
+// 2. Cek Tabel Pasien
 $stmt_pasien = mysqli_query($koneksi, "SELECT * FROM pasien WHERE email = '$email_safe' LIMIT 1");
 $d_pasien    = mysqli_fetch_assoc($stmt_pasien);
  
@@ -47,6 +46,5 @@ if ($d_pasien && password_verify($password, $d_pasien['password'])) {
     exit();
 }
  
-// 3. Login gagal
 header("Location: /login?error=1");
 exit();
