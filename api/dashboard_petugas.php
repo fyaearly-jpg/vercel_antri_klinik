@@ -8,7 +8,7 @@ $cookie_data = $cookie_raw ? json_decode(base64_decode($cookie_raw), true) : nul
 
 // 2. LOGIKA PROTEKSI (DIPERBAIKI: Menambahkan role 'staff')
 $role = isset($cookie_data['role']) ? strtolower(trim($cookie_data['role'])) : '';
-$allowed_roles = ['petugas', 'staff', 'admin'];
+$allowed_roles = ['petugas', 'staff'];
 
 if (!$cookie_data || !in_array($role, $allowed_roles)) {
     header("Location: /login");
