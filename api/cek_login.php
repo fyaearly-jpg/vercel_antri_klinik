@@ -10,18 +10,17 @@ if (isset($_POST['email'])) {
     $q_petugas = mysqli_query($koneksi, "SELECT * FROM petugas WHERE email='$email'");
     $d_petugas = mysqli_fetch_assoc($q_petugas);
 
-    if ($d_petugas && password_verify($password, $d_petugas['password'])) {
-        $_SESSION['nama_lengkap'] = $d_petugas['nama_lengkap'];
-        $_SESSION['role'] = $d_petugas['role'];
-        
-        // Sesuaikan dengan route di vercel.json
-        if ($d_petugas['role'] === 'admin') {
-            header("Location: /dashboard_admin");
-        } else {
-            header("Location: /dashboard_petugas");
-        }
+    // GANTI bagian pengecekan role admin dan petugas menjadi seperti ini:
+
+    if ($data['role'] == 'admin') {
+        $_SESSION['role'] = 'admin';
+        header("Location: dashboard_admin.php"); // Pastikan ekstensi .php terpasang
         exit();
-    } 
+    } else if ($data['role'] == 'petugas' || $data['role'] == 'staff') { 
+        $_SESSION['role'] = 'petugas';
+        header("Location: dashboard_petugas.php"); // Pastikan ekstensi .php terpasang
+        exit();
+    }
 
     // 2. Cek di Tabel Pasien
     $q_pasien = mysqli_query($koneksi, "SELECT * FROM pasien WHERE email='$email'");

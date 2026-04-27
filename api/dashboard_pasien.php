@@ -1,8 +1,10 @@
 <?php
+// Wajib ada di baris paling pertama
 session_start();
 
+// Validasi session harus sesuai dengan value yang diset pada proses login
 if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'pasien') {
-    header("Location: /login");
+    header("Location: login.php");
     exit();
 }
 ?>

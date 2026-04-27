@@ -1,29 +1,21 @@
 <?php
-include 'koneksi.php';
+session_start();
+require 'koneksi.php';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $nama  = mysqli_real_escape_string($koneksi, $_POST['nama']);
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $email = mysqli_real_escape_string($koneksi, $_POST['email']);
-    $pass  = password_hash($_POST['password'], PASSWORD_DEFAULT);
-    $role  = $_POST['role'];
+    // Pastikan name="nama_pasien" pada form input di file register.php
+    $nama_pasien = mysqli_real_escape_string($koneksi, $_POST['nama_pasien']); 
+    
+    // Hash password agar aman masuk ke database
+    $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
+    $role = 'pasien';
 
-    // Cek apakah email sudah ada di tabel petugas ATAU tabel pasien
-    $cek_petugas = mysqli_query($koneksi, "SELECT email FROM petugas WHERE email='$email'");
-    $cek_pasien  = mysqli_query($koneksi, "SELECT email FROM pasien WHERE email='$email'");
-
-    if (mysqli_num_rows($cek_petugas) > 0 || mysqli_num_rows($cek_pasien) > 0) {
-    echo "<script>alert('Email ini sudah terdaftar di sistem!'); window.history.back();</script>";
-    exit();
-}
-
-    if ($role !== 'pasien') {
-        $query = "INSERT INTO petugas (nama_lengkap, email, password, role) VALUES ('$nama', '$email', '$pass', '$role')";
-    } else {
-        $query = "INSERT INTO pasien (nama_pasien, email, password, role) VALUES ('$nama', '$email', '$pass', 'pasien')";
-    }
+    // Perhatikan nama kolom tabel agar sama persis
+    $query = "INSERT INTO pasien (email, nama_pasien, password, role) VALUES ('$email', '$nama_pasien', '$password', '$role')";
 
     if (mysqli_query($koneksi, $query)) {
-        echo "<script>alert('Berhasil daftar sebagai $role! Silakan login.'); window.location.href='index.php';</script>";
+        echo "<script>alert('Registrasi sukses!'); window.location.href='login.php';</script>";
     } else {
         echo "Error: " . mysqli_error($koneksi);
     }
