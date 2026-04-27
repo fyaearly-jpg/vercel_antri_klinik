@@ -1,4 +1,6 @@
 <?php
+// api/koneksi.php
+
 // Data dari TiDB Cloud
 $host = 'gateway01.ap-southeast-1.prod.alicloud.tidbcloud.com';
 $port = 4000;
@@ -6,14 +8,14 @@ $user = 'wG4jTPVkrLpurY1.root';
 $pass = 'lb5JGw7uy0uZJ9yf';
 $db   = 'klinik_db';
 
-// Inisialisasi mysqli
+// 1. Inisialisasi mysqli
 $koneksi = mysqli_init();
 
-// Menambahkan pengaturan SSL (Wajib untuk TiDB Serverless)
+// 2. Menambahkan pengaturan SSL (Wajib untuk TiDB Serverless)
 mysqli_ssl_set($koneksi, NULL, NULL, NULL, NULL, NULL);
 
-// Melakukan koneksi
-$real_koneksi = mysqli_real_koneksi(
+// 3. Melakukan koneksi - PERBAIKAN: Gunakan mysqli_real_connect
+$real_koneksi = mysqli_real_connect(
     $koneksi, 
     $host, 
     $user, 
@@ -24,7 +26,8 @@ $real_koneksi = mysqli_real_koneksi(
     MYSQLI_CLIENT_SSL
 );
 
+// 4. Cek Koneksi - PERBAIKAN: Gunakan mysqli_connect_error
 if (!$real_koneksi) {
-    die("Koneksi ke TiDB Cloud gagal: " . mysqli_koneksi_error());
+    die("Koneksi ke TiDB Cloud gagal: " . mysqli_connect_error());
 }
 ?>
