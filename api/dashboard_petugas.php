@@ -8,10 +8,11 @@ $cookie_data = $cookie_raw ? json_decode(base64_decode($cookie_raw), true) : nul
 
 // 2. Logika Proteksi: Izinkan jika role adalah 'petugas' ATAU 'admin'
 // Gunakan strtolower untuk menghindari masalah huruf besar/kecil
+// Di bagian atas api/dashboard_petugas.php
 $role = isset($cookie_data['role']) ? strtolower($cookie_data['role']) : '';
 
-if (!$cookie_data || ($role !== 'petugas' && $role !== 'admin')) {
-    // Jika gagal, lempar ke login
+// Tambahkan 'staff' di dalam pengecekan
+if (!$cookie_data || ($role !== 'petugas' && $role !== 'admin' && $role !== 'staff')) {
     header("Location: /login");
     exit();
 }
