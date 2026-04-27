@@ -39,7 +39,7 @@ $data_antrian = mysqli_fetch_assoc($query);
         <div class="card-custom overflow-hidden">
             <div class="p-8 text-center">
                 
-                <?php if (!isset($_SESSION['punya_antrean'])) : ?>
+                <?php if (!isset($_SESSION['data_antrian'])) : ?>
                     <h2 class="text-2xl font-black text-slate-800 mb-2">Pendaftaran</h2>
                     <p class="mb-6 text-slate-500 text-sm">Halo, <strong><?php echo htmlspecialchars($nama_pasien); ?></strong>. Silakan pilih layanan.</p>
                     <form action="/tambah_antrean_terbaru" method="POST">
@@ -58,7 +58,7 @@ $data_antrian = mysqli_fetch_assoc($query);
                     
                     <span class="inline-block px-4 py-1 bg-emerald-100 text-emerald-700 rounded-full text-xs font-bold uppercase tracking-widest mb-4">Nomor Anda</span>
                     <div class="nomor-besar mb-2">
-                        <?php echo $_SESSION['punya_antrean']; ?>
+                        <?php echo $_SESSION['data_antrian']; ?>
                     </div>
                     <p class="text-slate-500 font-medium mb-6">Poli Tujuan: <span class="text-slate-800 font-bold"><?php echo $_SESSION['poli_terpilih']; ?></span></p>
                     
@@ -81,7 +81,7 @@ $data_antrian = mysqli_fetch_assoc($query);
             </div>
         </div>
 
-        <?php if (isset($_SESSION['punya_antrean'])) : ?>
+        <?php if (isset($_SESSION['data_antrian'])) : ?>
         <div class="grid md:grid-cols-2 gap-6">
             
             <div class="card-custom p-6 flex flex-col items-center justify-center text-center">
@@ -164,7 +164,7 @@ $data_antrian = mysqli_fetch_assoc($query);
             });
     }
     
-    if ("<?php echo isset($_SESSION['punya_antrean']); ?>") {
+    if ("<?php echo isset($_SESSION['data_antrian']); ?>") {
         setInterval(ambilPanggilanTerbaru, 3000);
         ambilPanggilanTerbaru();
     }
@@ -186,7 +186,7 @@ $data_antrian = mysqli_fetch_assoc($query);
     }
 
     let statusTerakhir = 'menunggu';
-    const nomorAntrean = "<?php echo $_SESSION['punya_antrean'] ?? ''; ?>";
+    const nomorAntrean = "<?php echo $_SESSION['data_antrian'] ?? ''; ?>";
     const poliAntrean = "<?php echo $_SESSION['poli_terpilih'] ?? ''; ?>";
 
     function cekStatus() {
