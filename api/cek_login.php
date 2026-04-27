@@ -16,6 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $query_petugas = mysqli_query($koneksi, "SELECT * FROM petugas WHERE email = '$email'");
     $user = mysqli_fetch_assoc($query_petugas);
 
+    // Bagian Admin/Petugas di cek_login.php
     if ($user && password_verify($password, $user['password'])) {
         $session_data = [
             'id'    => $user['id'],
@@ -23,10 +24,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             'role'  => $user['role']
         ];
         
-        // Simpan data ke Cookie (Durasi 1 jam)
-        // Parameter: nama, nilai, expired, path, domain, secure, httponly
+        // PENTING: Gunakan path "/" agar cookie bisa dibaca di semua halaman
         setcookie("user_session", base64_encode(json_encode($session_data)), time() + 3600, "/", "", true, true);
         
+        // Arahkan ke rute yang ada di vercel.json
         header("Location: /dashboard_admin"); 
         exit();
     }

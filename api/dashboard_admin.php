@@ -3,15 +3,20 @@
 include 'koneksi.php';
 
 // 1. Baca Cookie
-$cookie_data = isset($_COOKIE['user_session']) ? json_decode(base64_decode($_COOKIE['user_session']), true) : null;
+$cookie_raw = $_COOKIE['user_session'] ?? null;
+$cookie_data = $cookie_raw ? json_decode(base64_decode($cookie_raw), true) : null;
 
-// 2. Cek apakah benar-benar Admin (Jika gagal, akan balik ke login)
+// 2. DEBUG (Opsional): Jika masih terpental, hapus komentar di bawah untuk cek isi cookie
+// if (!$cookie_data) { die("Cookie tidak ditemukan atau gagal decode"); }
+
+// 3. Syarat: Harus Login dan Role-nya 'admin'
 if (!$cookie_data || $cookie_data['role'] !== 'admin') {
-    header("Location: /login");
+    header("Location: /login"); // Gunakan rute vercel.json
     exit();
 }
 
 $nama_admin = $cookie_data['nama'];
+// ...;
 
 // 3. Ambil data statistik (Gunakan variabel $koneksi dari koneksi.php)
 $total_pasien = mysqli_fetch_assoc(mysqli_query($koneksi, "SELECT COUNT(*) as total FROM pasien"))['total'];
