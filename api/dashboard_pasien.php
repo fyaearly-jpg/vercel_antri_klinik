@@ -1,8 +1,8 @@
 <?php
 session_start();
-// Proteksi halaman: kalau bukan pasien, tendang ke login
-if ($_SESSION['role'] !== 'pasien') {
-    header("Location: login.php");
+
+if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'pasien') {
+    header("Location: /login");
     exit();
 }
 ?>
