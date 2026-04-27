@@ -1,16 +1,17 @@
 <?php
+// api/dashboard_admin.php
 require_once "session_config.php";
+include "koneksi.php"; // Pastikan koneksi disertakan
 
 if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
     header("Location: /login");
     exit();
 }
 
-// Pastikan include koneksi jika diperlukan atau gunakan variabel dari session_config
-include "koneksi.php"; 
+// Gunakan variabel session yang sesuai dengan cek_login.php
+$nama_admin = $_SESSION['nama'] ?? 'Admin'; 
 
-$nama_admin = $_SESSION['nama']; 
-
+// Query statistik - Pastikan variabelnya $koneksi
 $total_pasien = mysqli_fetch_assoc(mysqli_query($koneksi, "SELECT COUNT(*) as total FROM pasien"))['total'];
 $total_antrian = mysqli_fetch_assoc(mysqli_query($koneksi, "SELECT COUNT(*) as total FROM antrian"))['total'];
 $total_petugas = mysqli_fetch_assoc(mysqli_query($koneksi, "SELECT COUNT(*) as total FROM petugas"))['total'];

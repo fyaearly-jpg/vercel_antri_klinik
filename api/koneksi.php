@@ -13,7 +13,7 @@ $koneksi = mysqli_init();
 mysqli_ssl_set($koneksi, NULL, NULL, NULL, NULL, NULL);
 
 // Melakukan koneksi
-$real_connect = mysqli_real_connect(
+$real_koenksi = mysqli_real_koneksi(
     $koneksi, 
     $host, 
     $user, 
@@ -24,7 +24,7 @@ $real_connect = mysqli_real_connect(
     MYSQLI_CLIENT_SSL
 );
 
-if (!$real_connect) {
-    die("Koneksi ke TiDB Cloud gagal: " . mysqli_connect_error());
+if (!$real_koneksi) {
+    die("Koneksi ke TiDB Cloud gagal: " . mysqli_koneksi_error());
 }
 ?>
