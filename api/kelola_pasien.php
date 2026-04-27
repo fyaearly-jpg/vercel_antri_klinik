@@ -7,7 +7,7 @@ if (!$cookie_data || $cookie_data['role'] !== 'admin') {
     exit();
 }
 
-$query = mysqli_query($conn, "SELECT * FROM pasien ORDER BY nama_pasien ASC");
+$query = mysqli_query($koneksi, "SELECT * FROM pasien ORDER BY nama_pasien ASC");
 
 ?>
 <!DOCTYPE html>

@@ -26,7 +26,7 @@ $total_antrean = mysqli_fetch_assoc($q_total)['total'] ?? 0;
 // Antrean yang sedang dipanggil (agar sinkron dengan monitoring)
 $q_current = mysqli_query($koneksi, "SELECT nomor_antrean, poli FROM antrian WHERE status = 'dipanggil' AND DATE(created_at) = '$hari_ini' ORDER BY updated_at DESC LIMIT 1");
 $current = mysqli_fetch_assoc($q_current);
-$nomor_sekarang = $current['nomor_antrian'] ?? '--';
+$nomor_sekarang = $current['nomor_antrean'] ?? '--';
 $poli_sekarang = $current['poli'] ?? 'Tidak ada';
 
 // 4. DATA UNTUK GRAFIK (SINKRON DENGAN TIDB)
@@ -50,116 +50,155 @@ if ($res && mysqli_num_rows($res) > 0) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Petugas - Klinik Digital</title>
+    <title>Dashboard Petugas | Digital Clinic</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body { font-family: 'Poppins', sans-serif; background-color: #f8fafc; }
+        .glass-card { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); }
+    </style>
 </head>
-<body class="bg-gray-50 font-sans">
+<body class="min-h-screen p-4 md:p-10">
 
-    <nav class="bg-white shadow-sm border-b border-gray-100">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16 items-center">
-                <div class="flex items-center gap-2">
-                    <div class="bg-blue-600 p-2 rounded-lg">
-                        <i class="fas fa-clinic-medical text-white"></i>
-                    </div>
-                    <span class="text-xl font-bold text-gray-800 tracking-tight">Klinik<span class="text-blue-600">Digital</span></span>
+    <div class="max-w-6xl mx-auto">
+        
+        <div class="flex flex-col md:flex-row justify-between items-center mb-10 bg-white p-8 rounded-[2rem] shadow-sm border border-slate-200 gap-6">
+            <div class="flex items-center gap-5">
+                <div class="w-16 h-16 bg-emerald-500 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-emerald-200">
+                    <i class="fas fa-user-md text-3xl"></i>
                 </div>
-                <div class="flex items-center gap-4">
-                    <div class="text-right hidden sm:block">
-                        <p class="text-sm font-medium text-gray-900"><?php echo htmlspecialchars($nama_petugas); ?></p>
-                        <p class="text-xs text-gray-500 capitalize"><?php echo $role; ?></p>
-                    </div>
-                    <a href="/logout" class="bg-gray-100 hover:bg-red-50 text-gray-600 hover:text-red-600 p-2 rounded-full transition-all">
-                        <i class="fas fa-power-off"></i>
-                    </a>
+                <div>
+                    <h1 class="text-2xl md:text-3xl font-bold text-slate-800">Halo, <?php echo htmlspecialchars($nama_lengkap); ?>!</h1>
+                    <p class="text-slate-500">Selamat bertugas di <span class="text-emerald-600 font-bold uppercase tracking-wider text-sm"><?php echo $role_user; ?> Panel</span></p>
                 </div>
             </div>
-        </div>
-    </nav>
-
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div class="mb-8">
-            <h1 class="text-2xl font-bold text-gray-900">Selamat Datang, <?php echo htmlspecialchars($nama_petugas); ?> 👋</h1>
-            <p class="text-gray-500">Ringkasan aktivitas klinik tanggal <?php echo date('d/m/Y'); ?></p>
+            <a href="logout.php" class="w-full md:w-auto bg-red-500 hover:bg-red-600 text-white px-8 py-3 rounded-2xl font-bold transition-all shadow-lg shadow-red-100 flex items-center justify-center gap-2 active:scale-95">
+                <i class="fas fa-sign-out-alt"></i> Keluar Sistem
+            </a>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
+            <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
+                <p class="text-slate-400 text-xs font-bold uppercase tracking-widest mb-1">Total Antrean</p>
+                <h3 class="text-3xl font-black text-slate-800"><?php echo $total_pasien; ?></h3>
+            </div>
+            <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
+                <p class="text-slate-400 text-xs font-bold uppercase tracking-widest mb-1">Sudah Dilayani</p>
+                <h3 class="text-3xl font-black text-emerald-500"><?php echo $total_selesai; ?></h3>
+            </div>
+            <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
+                <p class="text-slate-400 text-xs font-bold uppercase tracking-widest mb-1">Tanggal</p>
+                <h3 class="text-lg font-bold text-slate-700"><?php echo date('d M Y'); ?></h3>
+            </div>
+            <div class="bg-emerald-600 p-6 rounded-3xl shadow-lg shadow-emerald-100 text-white">
+                <p class="text-emerald-200 text-xs font-bold uppercase tracking-widest mb-1">Status Server</p>
+                <h3 class="text-lg font-bold flex items-center gap-2">
+                    <span class="w-2 h-2 bg-white rounded-full animate-ping"></span> Online
+                </h3>
+            </div>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-8 mb-10">
             
-            <div class="lg:col-span-1 space-y-6">
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                    <div class="flex items-center gap-4">
-                        <div class="bg-blue-100 text-blue-600 p-4 rounded-xl">
-                            <i class="fas fa-users text-2xl"></i>
-                        </div>
-                        <div>
-                            <p class="text-sm text-gray-500 font-medium">Total Pasien Hari Ini</p>
-                            <h3 class="text-3xl font-bold text-gray-900"><?php echo $total_antrean; ?></h3>
-                        </div>
-                    </div>
+            <a href="monitoring.php" class="group bg-white p-8 rounded-[2.5rem] shadow-xl shadow-slate-200/50 hover:shadow-emerald-200/50 transition-all border border-slate-100 hover:-translate-y-2">
+                <div class="w-16 h-16 bg-emerald-100 rounded-2xl flex items-center justify-center mb-6 text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white transition-all duration-300">
+                    <i class="fas fa-chalkboard-user text-2xl"></i>
                 </div>
+                <h2 class="text-2xl font-bold text-slate-800">Monitoring Antrean</h2>
+                <p class="text-slate-500 mt-3 leading-relaxed">Panggil nomor antrean, kelola status pelayanan, dan lihat daftar tunggu pasien.</p>
+                <div class="mt-8 flex items-center text-emerald-600 font-bold group-hover:gap-4 gap-2 transition-all">
+                    <span>Kelola Sekarang</span>
+                    <i class="fas fa-arrow-right"></i>
+                </div>
+            </a>
 
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                    <div class="flex items-center gap-4">
-                        <div class="bg-emerald-100 text-emerald-600 p-4 rounded-xl">
-                            <i class="fas fa-bullhorn text-2xl"></i>
-                        </div>
-                        <div>
-                            <p class="text-sm text-gray-500 font-medium">Sekarang di <?php echo htmlspecialchars($poli_sekarang); ?></p>
-                            <h3 class="text-2xl font-bold text-gray-900"><?php echo $nomor_sekarang; ?></h3>
-                        </div>
-                    </div>
+            <a href="display.php" target="_blank" class="group bg-white p-8 rounded-[2.5rem] shadow-xl shadow-slate-200/50 hover:shadow-blue-200/50 transition-all border border-slate-100 hover:-translate-y-2">
+                <div class="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center mb-6 text-blue-500 group-hover:bg-blue-500 group-hover:text-white transition-all duration-300">
+                    <i class="fas fa-desktop text-2xl"></i>
                 </div>
+                <h2 class="text-2xl font-bold text-slate-800">Layar Display TV</h2>
+                <p class="text-slate-500 mt-3 leading-relaxed">Tampilkan nomor antrean secara real-time untuk layar monitor di ruang tunggu.</p>
+                <div class="mt-8 flex items-center text-blue-600 font-bold group-hover:gap-4 gap-2 transition-all">
+                    <span>Buka Display</span>
+                    <i class="fas fa-external-link-alt"></i>
+                </div>
+            </a>
 
-                <div class="bg-gradient-to-br from-blue-600 to-indigo-700 p-6 rounded-2xl shadow-lg text-white">
-                    <h4 class="font-bold mb-2">Mulai Panggil Antrean?</h4>
-                    <p class="text-blue-100 text-sm mb-4">Masuk ke halaman monitoring untuk mengelola antrean masuk.</p>
-                    <a href="/monitoring" class="bg-white text-blue-600 px-4 py-2 rounded-lg text-sm font-bold inline-block hover:bg-blue-50 transition-all">
-                        Buka Monitoring <i class="fas fa-arrow-right ml-2"></i>
-                    </a>
+        </div>
+
+        <div class="bg-white p-8 md:p-12 rounded-[3rem] shadow-xl border border-slate-100">
+            <div class="flex items-center justify-between mb-8">
+                <div>
+                    <h2 class="text-2xl font-bold text-slate-800">Statistik Kunjungan Poli</h2>
+                    <p class="text-slate-500">Distribusi pasien per departemen hari ini</p>
                 </div>
+                <button onclick="updateChart()" class="w-10 h-10 bg-slate-50 rounded-full flex items-center justify-center text-slate-400 hover:text-emerald-500 hover:bg-emerald-50 transition-all">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
             </div>
-
-            <div class="lg:col-span-2">
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 h-full">
-                    <div class="flex justify-between items-center mb-6">
-                        <h3 class="font-bold text-gray-800"><i class="fas fa-chart-pie text-blue-600 mr-2"></i> Kunjungan Per Poli</h3>
-                        <span class="text-xs font-medium bg-gray-100 text-gray-500 px-3 py-1 rounded-full">Real-time</span>
-                    </div>
-                    <div class="relative" style="height: 300px;">
-                        <canvas id="antrianChart"></canvas>
-                    </div>
-                </div>
+            
+            <div class="h-[350px]">
+                <canvas id="chartPoli"></canvas>
             </div>
         </div>
-    </main>
+
+        <p class="text-center text-slate-400 mt-12 text-sm">
+            &copy; 2026 Digital Clinic System &bull; Universitas Sebelas Maret Project
+        </p>
+
+    </div>
 
     <script>
-        const ctx = document.getElementById('antrianChart').getContext('2d');
-        new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: <?php echo json_encode($labels); ?>,
-                datasets: [{
-                    label: 'Jumlah Pasien',
-                    data: <?php echo json_encode($data_grafik); ?>,
-                    backgroundColor: 'rgba(37, 99, 235, 0.7)',
-                    hoverBackgroundColor: 'rgba(37, 99, 235, 1)',
-                    borderRadius: 10,
-                    borderSkipped: false,
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: {
-                    x: { grid: { display: false } },
-                    y: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { borderDash: [5, 5] } }
-                }
-            }
-        });
+        let myChart;
+
+        function updateChart() {
+            fetch('get_statistik_poli.php')
+                .then(response => response.json())
+                .then(result => {
+                    const ctx = document.getElementById('chartPoli').getContext('2d');
+                    
+                    if (myChart) { myChart.destroy(); }
+
+                    myChart = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: result.labels,
+                            datasets: [{
+                                label: 'Jumlah Pasien',
+                                data: result.data,
+                                backgroundColor: [
+                                    'rgba(16, 185, 129, 0.7)', 
+                                    'rgba(59, 130, 246, 0.7)', 
+                                    'rgba(249, 115, 22, 0.7)', 
+                                    'rgba(139, 92, 246, 0.7)'
+                                ],
+                                borderRadius: 12,
+                                borderSkipped: false,
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { display: false }
+                            },
+                            scales: {
+                                y: { beginAtZero: true, grid: { color: '#f1f5f9' } },
+                                x: { grid: { display: false } }
+                            }
+                        }
+                    });
+                });
+        }
+
+        // Jalankan Chart
+        updateChart();
+        // Auto update tiap 30 detik
+        setInterval(updateChart, 30000);
     </script>
+
 </body>
 </html>

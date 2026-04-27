@@ -2,25 +2,44 @@
 // api/dashboard_admin.php
 include 'koneksi.php';
 
-// 1. Baca Cookie
+// 1. Ambil data dari Cookie (Sesuai dengan cek_login.php)
 $cookie_raw = $_COOKIE['user_session'] ?? null;
 $cookie_data = $cookie_raw ? json_decode(base64_decode($cookie_raw), true) : null;
 
-// 2. DEBUG (Opsional): Jika masih terpental, hapus komentar di bawah untuk cek isi cookie
-// if (!$cookie_data) { die("Cookie tidak ditemukan atau gagal decode"); }
-
-// 3. Syarat: Harus Login dan Role-nya 'admin'
-if (!$cookie_data || $cookie_data['role'] !== 'admin') {
-    header("Location: /login"); // Gunakan rute vercel.json
+// 2. Proteksi: Wajib Admin (Mencegah terpental jika role benar)
+$role = isset($cookie_data['role']) ? strtolower(trim($cookie_data['role'])) : '';
+if (!$cookie_data || $role !== 'admin') {
+    header("Location: /login");
     exit();
 }
 
 $nama_admin = $cookie_data['nama'];
-// ...;
+$hari_ini = date('Y-m-d');
 
-// 3. Ambil data statistik (Gunakan variabel $koneksi dari koneksi.php)
-$total_pasien = mysqli_fetch_assoc(mysqli_query($koneksi, "SELECT COUNT(*) as total FROM pasien"))['total'];
-$total_antrian = mysqli_fetch_assoc(mysqli_query($koneksi, "SELECT COUNT(*) as total FROM antrian"))['total'];
+// 3. FITUR STATISTIK (Sinkron dengan data asli)
+// Total Antrean Hari Ini
+$q_total = mysqli_query($koneksi, "SELECT COUNT(*) as total FROM antrian WHERE DATE(created_at) = '$hari_ini'");
+$total_antrean = mysqli_fetch_assoc($q_total)['total'] ?? 0;
+
+// Total Pasien Terdaftar (Sinkron dengan tabel pasien)
+$q_pasien = mysqli_query($koneksi, "SELECT COUNT(*) as total FROM pasien");
+$total_pasien = mysqli_fetch_assoc($q_pasien)['total'] ?? 0;
+
+// Feedback Terbaru (Sinkron dengan simpan_feedback.php)
+$q_feedback = mysqli_query($koneksi, "SELECT COUNT(*) as total FROM feedback");
+$total_feedback = mysqli_fetch_assoc($q_feedback)['total'] ?? 0;
+
+// 4. DATA UNTUK GRAFIK (Perbaikan Unknown Column nomor_antrian)
+$labels = [];
+$data_grafik = [];
+$res = mysqli_query($koneksi, "SELECT poli, COUNT(*) as total FROM antrian WHERE DATE(created_at) = '$hari_ini' GROUP BY poli");
+while($row = mysqli_fetch_assoc($res)) {
+    $labels[] = $row['poli'];
+    $data_grafik[] = (int)$row['total'];
+}
+
+// Placeholder jika data kosong agar Chart.js tidak error
+if(empty($labels)) { $labels = ['Belum Ada Data']; $data_grafik = [0]; }
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -92,7 +111,7 @@ $total_antrian = mysqli_fetch_assoc(mysqli_query($koneksi, "SELECT COUNT(*) as t
 
             <div class="overflow-y-auto pr-2 space-y-3 custom-scrollbar" style="max-height: 450px;">
                 <?php
-                $q_feedback = mysqli_query($conn, "SELECT * FROM feedback ORDER BY created_at DESC");
+                $q_feedback = mysqli_query($koneksi, "SELECT * FROM feedback ORDER BY created_at DESC");
                 
                 if (mysqli_num_rows($q_feedback) > 0) {
                     while ($f = mysqli_fetch_assoc($q_feedback)) {
