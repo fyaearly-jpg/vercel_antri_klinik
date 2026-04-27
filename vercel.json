@@ -10,7 +10,7 @@
       "dest": "/api/$1"
     },
     {
-      "src": "/(login|register|dashboard_pasien|dashboard_petugas)",
+      "src": "/(login|register|dashboard_pasien|dashboard_petugas|dashboard_admin)",
       "dest": "/api/$1.php"
     },
     {
