@@ -1,5 +1,5 @@
 <?php
-session_start(); // Wajib ada di baris pertama
+session_start(); // Cukup satu kali di paling atas
 include "koneksi.php";
 
 if (isset($_POST['email'])) {
@@ -13,7 +13,13 @@ if (isset($_POST['email'])) {
     if ($d_petugas && password_verify($password, $d_petugas['password'])) {
         $_SESSION['nama_lengkap'] = $d_petugas['nama_lengkap'];
         $_SESSION['role'] = $d_petugas['role'];
-        header("Location: /dashboard_petugas"); // Pakai route vercel.json
+        
+        // Sesuaikan dengan route di vercel.json
+        if ($d_petugas['role'] === 'admin') {
+            header("Location: /dashboard_admin");
+        } else {
+            header("Location: /dashboard_petugas");
+        }
         exit();
     } 
 
@@ -22,14 +28,20 @@ if (isset($_POST['email'])) {
     $d_pasien = mysqli_fetch_assoc($q_pasien);
 
     if ($d_pasien && password_verify($password, $d_pasien['password'])) {
+        $_SESSION['role'] = 'pasien';
         $_SESSION['nama_pasien'] = $d_pasien['nama_pasien'];
         $_SESSION['id_pasien'] = $d_pasien['id'];
-        $_SESSION['role'] = 'pasien';
-        header("Location: /dashboard_pasien");
+        
+        header("Location: /dashboard_pasien"); // Pakai / agar lewat vercel.json
         exit();
     } else {
+        // Jika tidak ketemu di petugas maupun pasien
         echo "<script>alert('Email atau Password Salah!'); window.location.href='/login';</script>";
         exit();
     }
+} else {
+    // Jika akses file ini tanpa kirim form
+    header("Location: /login");
+    exit();
 }
 ?>
