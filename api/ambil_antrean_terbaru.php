@@ -3,7 +3,7 @@ include 'koneksi.php';
 $hari_ini = date('Y-m-d');
 
 // Ambil antrean yang statusnya 'dipanggil' paling baru
-$query = mysqli_query($conn, "SELECT nomor_antrian, poli FROM antrian 
+$query = mysqli_query($koneksi, "SELECT nomor_antrian, poli FROM antrian 
                               WHERE status = 'dipanggil' 
                               AND DATE(created_at) = '$hari_ini' 
                               ORDER BY updated_at DESC LIMIT 1");
