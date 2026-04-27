@@ -1,33 +1,22 @@
 <?php
-// Wajib include session_config dulu
-require_once "session_config.php"; 
+// api/cek_login.php
+include 'koneksi.php';
 
-$email    = $_POST['email'] ?? '';
-$password = $_POST['password'] ?? '';
+// ... (logika ambil email & password) ...
 
-if (empty($email) || empty($password)) {
-    header("Location: /login?error=empty");
-    exit();
-}
+if ($user && password_verify($password, $user['password'])) {
+    // Tentukan data yang mau disimpan
+    $user_data = [
+        'id' => $user['id'],
+        'nama' => $user['nama_lengkap'],
+        'role' => $user['role']
+    ];
 
-$email_safe = mysqli_real_escape_string($koneksi, $email);
+    // Simpan ke Cookie selama 1 jam (3600 detik)
+    // base64_encode hanya agar data tidak berantakan di browser
+    setcookie("user_session", base64_encode(json_encode($user_data)), time() + 3600, "/", "", true, true);
 
-// 1. Cek Tabel Petugas
-$res_petugas = mysqli_query($koneksi, "SELECT * FROM petugas WHERE email = '$email_safe' LIMIT 1");
-$d_petugas   = mysqli_fetch_assoc($res_petugas);
-
-if ($d_petugas && password_verify($password, $d_petugas['password'])) {
-    $_SESSION['email'] = $d_petugas['email'];
-    $_SESSION['nama']  = $d_petugas['nama_lengkap'];
-    $_SESSION['role']  = $d_petugas['role'];
-
-    session_write_close(); // Simpan data ke TiDB sebelum redirect
-    
-    if ($_SESSION['role'] == 'admin') {
-        header("Location: /dashboard_admin");
-    } else {
-        header("Location: /dashboard_petugas");
-    }
+    header("Location: /dashboard_admin");
     exit();
 }
 

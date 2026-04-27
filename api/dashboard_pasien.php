@@ -1,28 +1,25 @@
 <?php
-session_start();
+// api/dashboard_pasien.php
 include 'koneksi.php';
+include 'auth_helper.php';
 
-// Pastikan session id_pasien ada
-if (!isset($_SESSION['id_pasien'])) {
-    echo json_encode(['status' => 'error', 'message' => 'Session habis']);
+$user = get_user_session();
+
+if (!$user) {
+    echo json_encode(['status' => 'error', 'message' => 'Belum login']);
     exit();
 }
 
-$id_pasien = $_SESSION['id_pasien'];
+$id_pasien = $user['id']; // Ambil ID dari Cookie
 
-// Perbaikan 1: Gunakan ORDER BY id jika created_at belum ada di DB
+// Jalankan query seperti biasa
 $sql = "SELECT * FROM antrian WHERE id_pasien = '$id_pasien' ORDER BY id DESC LIMIT 1";
 $query_antrian = mysqli_query($koneksi, $sql);
-
-// Perbaikan 2: Nama variabel harus sama ($query_antrian)
 $data = mysqli_fetch_assoc($query_antrian);
 
 header('Content-Type: application/json');
-if ($data) {
-    echo json_encode($data);
-} else {
-    echo json_encode(['status' => 'none', 'nomor_antrian' => '-']);
-}
+echo json_encode($data ?: ['status' => 'none', 'nomor_antrian' => '-']);
+
 ?>
 <!DOCTYPE html>
 <html lang="id">
