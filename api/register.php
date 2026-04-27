@@ -22,7 +22,7 @@
             <p class="text-slate-400 text-sm mt-1">Lengkapi data untuk akses sistem</p>
         </div>
 
-        <form action="proses_register.php" method="POST" class="space-y-4">
+        <form action="/proses_register" method="POST">
             <div>
                 <label class="block text-sm font-semibold text-slate-700 mb-1">Nama Lengkap</label>
                 <input type="text" name="nama" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-emerald-400 outline-none transition-all" placeholder="Nama sesuai identitas" required>

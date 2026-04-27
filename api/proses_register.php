@@ -10,10 +10,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Sesuaikan kolom: nama_pasien (sesuai SQL)
     $sql = "INSERT INTO pasien (email, nama_pasien, password, role) VALUES ('$email', '$nama', '$password', '$role')";
 
-    if (mysqli_query($koneksi, $sql)) {
-        echo "<script>alert('Berhasil Daftar!'); window.location.href='/login';</script>";
-    } else {
-        echo "Error: " . mysqli_error($koneksi);
-    }
+    // Di bagian akhir api/proses_register.php jika query sukses:
+if ($query_simpan) {
+     echo "<script>
+    alert('Registrasi Berhasil! Silakan Login.');
+    window.location.href='/login'; 
+    </script>";
 }
 ?>
