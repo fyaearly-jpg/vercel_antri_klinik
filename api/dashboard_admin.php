@@ -1,12 +1,12 @@
 <?php
-session_start();
-include "koneksi.php";
+// Di dashboard_admin.php, dashboard_pasien.php, dll.
+require_once "session_config.php";
 
-// Proteksi Halaman Admin
-if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+if (!isset($_SESSION['role'])) {
     header("Location: /login");
     exit();
 }
+?>
 
 // Ambil data dari session sesuai variabel di cek_login.php
 $nama_admin = $_SESSION['nama']; // Menggunakan 'nama_lengkap' dari tabel petugas
