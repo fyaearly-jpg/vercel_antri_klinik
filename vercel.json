@@ -5,6 +5,49 @@
     }
   },
   "routes": [
-    { "src": "/(.*)", "dest": "/$1" }
+    {
+      "src": "/login",
+      "dest": "/api/login.php"
+    },
+    {
+      "src": "/register",
+      "dest": "/api/register.php"
+    },
+    {
+      "src": "/cek_login",
+      "dest": "/api/cek_login.php"
+    },
+    {
+      "src": "/logout",
+      "dest": "/api/logout.php"
+    },
+    {
+      "src": "/dashboard_admin",
+      "dest": "/api/dashboard_admin.php"
+    },
+    {
+      "src": "/dashboard_petugas",
+      "dest": "/api/dashboard_petugas.php"
+    },
+    {
+      "src": "/dashboard_pasien",
+      "dest": "/api/dashboard_pasien.php"
+    },
+    {
+      "src": "/kelola_petugas",
+      "dest": "/api/kelola_petugas.php"
+    },
+    {
+      "src": "/kelola_pasien",
+      "dest": "/api/kelola_pasien.php"
+    },
+    {
+      "src": "/update_status",
+      "dest": "/api/update_status.php"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/$1"
+    }
   ]
 }
