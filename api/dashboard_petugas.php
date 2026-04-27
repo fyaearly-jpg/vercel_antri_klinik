@@ -2,11 +2,16 @@
 // api/dashboard_petugas.php
 include 'koneksi.php';
 
-// 1. Ambil data dari Cookie untuk proteksi (seperti yang sudah dibahas sebelumnya)
+// 1. Ambil data dari Cookie
 $cookie_raw = $_COOKIE['user_session'] ?? null;
 $cookie_data = $cookie_raw ? json_decode(base64_decode($cookie_raw), true) : null;
+
+// 2. Logika Proteksi: Izinkan jika role adalah 'petugas' ATAU 'admin'
+// Gunakan strtolower untuk menghindari masalah huruf besar/kecil
+// Di bagian atas api/dashboard_petugas.php
 $role = isset($cookie_data['role']) ? strtolower($cookie_data['role']) : '';
 
+// Tambahkan 'staff' di dalam pengecekan
 if (!$cookie_data || ($role !== 'petugas' && $role !== 'admin' && $role !== 'staff')) {
     header("Location: /login");
     exit();
@@ -14,37 +19,13 @@ if (!$cookie_data || ($role !== 'petugas' && $role !== 'admin' && $role !== 'sta
 
 $nama_petugas = $cookie_data['nama'];
 
-// --- PERBAIKAN ERROR START ---
-
-// 2. Definisikan variabel $hari_ini agar tidak "Undefined variable"
-$hari_ini = date('Y-m-d');
-
-// 3. Ambil data untuk Grafik
-// Pastikan nama kolom di database adalah 'poli'. Jika di DB kamu namanya 'nama_poli', ganti di bawah ini.
-$labels = [];
 $data_grafik = [];
-
-$query_grafik = "SELECT poli, COUNT(*) as total 
-                 FROM antrian 
-                 WHERE DATE(created_at) = '$hari_ini' 
-                 GROUP BY poli";
-
-$res = mysqli_query($koneksi, $query_grafik);
-
-if ($res) {
-    while($row = mysqli_fetch_assoc($res)) {
-        $labels[] = $row['poli'];
-        $data_grafik[] = (int)$row['total'];
-    }
+$labels = [];
+$res = mysqli_query($koneksi, "SELECT poli, COUNT(*) as total FROM antrian WHERE DATE(created_at) = '$hari_ini' GROUP BY poli");
+while($row = mysqli_fetch_assoc($res)) {
+    $labels[] = $row['poli'];
+    $data_grafik[] = $row['total'];
 }
-
-// Jika data kosong, beri nilai default agar grafik tidak error di JS
-if (empty($labels)) {
-    $labels = ['Belum Ada Data'];
-    $data_grafik = [0];
-}
-
-// --- PERBAIKAN ERROR END ---
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -152,29 +133,54 @@ if (empty($labels)) {
 
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-    const ctx = document.getElementById('antrianChart').getContext('2d');
-    new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: <?php echo json_encode($labels); ?>,
-            datasets: [{
-                label: 'Jumlah Antrean Hari Ini',
-                data: <?php echo json_encode($data_grafik); ?>,
-                backgroundColor: 'rgba(59, 130, 246, 0.8)',
-                borderColor: 'rgba(59, 130, 246, 1)',
-                borderWidth: 1
-            }]
-        },
-        options: {
-            responsive: true,
-            scales: {
-                y: { beginAtZero: true, ticks: { stepSize: 1 } }
-            }
+    <script>
+        let myChart;
+
+        function updateChart() {
+            fetch('get_statistik_poli.php')
+                .then(response => response.json())
+                .then(result => {
+                    const ctx = document.getElementById('chartPoli').getContext('2d');
+                    
+                    if (myChart) { myChart.destroy(); }
+
+                    myChart = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: result.labels,
+                            datasets: [{
+                                label: 'Jumlah Pasien',
+                                data: result.data,
+                                backgroundColor: [
+                                    'rgba(16, 185, 129, 0.7)', 
+                                    'rgba(59, 130, 246, 0.7)', 
+                                    'rgba(249, 115, 22, 0.7)', 
+                                    'rgba(139, 92, 246, 0.7)'
+                                ],
+                                borderRadius: 12,
+                                borderSkipped: false,
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { display: false }
+                            },
+                            scales: {
+                                y: { beginAtZero: true, grid: { color: '#f1f5f9' } },
+                                x: { grid: { display: false } }
+                            }
+                        }
+                    });
+                });
         }
-    });
-</script>
+
+        // Jalankan Chart
+        updateChart();
+        // Auto update tiap 30 detik
+        setInterval(updateChart, 30000);
+    </script>
 
 </body>
 </html>
