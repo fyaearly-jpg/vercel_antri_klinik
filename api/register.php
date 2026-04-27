@@ -40,6 +40,7 @@
                 <select name="role" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-emerald-400 outline-none transition-all bg-white">
                     <option value="pasien">Pasien</option>
                     <option value="staff">Petugas (Staff)</option>
+                    <option value="admin">Admin</option>
                 </select>
             </div>
             <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl transition-all shadow-lg shadow-emerald-200 mt-2">
