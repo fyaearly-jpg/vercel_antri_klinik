@@ -16,35 +16,26 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $query_petugas = mysqli_query($koneksi, "SELECT * FROM petugas WHERE email = '$email'");
     $user = mysqli_fetch_assoc($query_petugas);
 
-    // Bagian Admin/Petugas di cek_login.php
-    // Di dalam api/cek_login.php bagian pengecekan petugas
-   // Bagian pengecekan petugas di api/cek_login.php
-    // ... (bagian atas cek_login.php tetap sama)
-
+    
     if ($user && password_verify($password, $user['password'])) {
-        // Trim dan strtolower agar data bersih
-        $role_db = strtolower(trim($user['role'])); 
+        $current_role = strtolower($user['role']); // Ambil role dari DB dan kecilkan hurufnya
         
         $session_data = [
             'id'    => $user['id'],
             'nama'  => $user['nama_lengkap'],
-            'role'  => $role_db
+            'role'  => $current_role
         ];
         
-        // PENTING: Path "/" agar bisa dibaca di semua folder (/api/ atau root)
-        // Gunakan durasi yang cukup lama (misal 1 jam = 3600 detik)
-        setcookie("user_session", base64_encode(json_encode($session_data)), time() + 3600, "/", "", false, true);
+        setcookie("user_session", base64_encode(json_encode($session_data)), time() + 3600, "/", "", true, true);
         
-        // Redirect berdasarkan role yang sudah dibersihkan
-        if ($role_db === 'admin') {
+        // Redirect berdasarkan role yang ada di CSV
+        if ($current_role === 'admin') {
             header("Location: /dashboard_admin");
         } else {
-            // Ini akan mengarah ke dashboard_petugas meskipun role-nya 'staff'
+            // Jika di CSV tulisannya 'staff', dia akan masuk ke dashboard_petugas
             header("Location: /dashboard_petugas");
         }
         exit();
-    }
-// ...
     }
     // 4. Cek di tabel pasien jika data petugas tidak ditemukan
     $query_pasien = mysqli_query($koneksi, "SELECT * FROM pasien WHERE email = '$email'");
