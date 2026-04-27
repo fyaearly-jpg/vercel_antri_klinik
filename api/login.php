@@ -20,8 +20,15 @@
             <h2 class="text-2xl font-extrabold text-slate-800">KLINIK SEHAT</h2>
             <p class="text-slate-400 text-sm mt-1">Silakan masuk ke akun Anda</p>
         </div>
-
-        <form action="cek_login.php" method="POST" class="space-y-4">
+ 
+        <?php if (isset($_GET['error'])): ?>
+        <div class="bg-red-50 border border-red-200 text-red-600 text-sm rounded-xl px-4 py-3 mb-4 text-center">
+            Email atau password salah. Silakan coba lagi.
+        </div>
+        <?php endif; ?>
+ 
+        <!-- action pakai /cek_login bukan cek_login.php -->
+        <form action="/cek_login" method="POST" class="space-y-4">
             <div>
                 <label class="block text-sm font-semibold text-slate-700 mb-1">Email</label>
                 <input type="email" name="email" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-emerald-400 outline-none transition-all" placeholder="nama@email.com" required>
@@ -34,7 +41,7 @@
                 MASUK
             </button>
         </form>
-
+ 
         <p class="text-center text-sm text-slate-400 mt-6">
             Belum punya akun? <a href="/register" class="text-emerald-600 font-bold hover:underline">Daftar</a>
         </p>
