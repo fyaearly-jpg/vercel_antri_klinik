@@ -1,39 +1,52 @@
 <?php
 session_start();
 include "koneksi.php";
-
+ 
+// Ambil input dari form
+$email    = $_POST['email'] ?? '';
+$password = $_POST['password'] ?? '';
+ 
+// Validasi input tidak kosong
+if (empty($email) || empty($password)) {
+    header("Location: /login?error=1");
+    exit();
+}
+ 
 // 1. Cek di Tabel Petugas (Admin & Staff)
+$email_safe  = mysqli_real_escape_string($koneksi, $email);
+$stmt_petugas = mysqli_query($koneksi, "SELECT * FROM petugas WHERE email = '$email_safe' LIMIT 1");
+$d_petugas    = mysqli_fetch_assoc($stmt_petugas);
+ 
 if ($d_petugas && password_verify($password, $d_petugas['password'])) {
-    // Set Session Umum
     $_SESSION['email'] = $d_petugas['email'];
-    $_SESSION['nama'] = $d_petugas['nama_lengkap'];
-
-    // Cek Role untuk Redirect menggunakan rute bersih Vercel
+    $_SESSION['nama']  = $d_petugas['nama_lengkap'];
+ 
     if ($d_petugas['role'] == 'admin') {
         $_SESSION['role'] = 'admin';
-        session_write_close(); // Simpan session sebelum redirect
+        session_write_close();
         header("Location: /dashboard_admin");
         exit();
-    } else if ($d_petugas['role'] == 'staff' || $d_petugas['role'] == 'petugas') {
+    } elseif ($d_petugas['role'] == 'staff' || $d_petugas['role'] == 'petugas') {
         $_SESSION['role'] = 'petugas';
-        session_write_close(); // Simpan session sebelum redirect
+        session_write_close();
         header("Location: /dashboard_petugas");
         exit();
     }
 }
-
-// 2. Jika tidak ada di petugas, Cek di Tabel Pasien
+ 
+// 2. Cek di Tabel Pasien
+$stmt_pasien = mysqli_query($koneksi, "SELECT * FROM pasien WHERE email = '$email_safe' LIMIT 1");
+$d_pasien    = mysqli_fetch_assoc($stmt_pasien);
+ 
 if ($d_pasien && password_verify($password, $d_pasien['password'])) {
-    $_SESSION['id_pasien'] = $d_pasien['id'];
+    $_SESSION['id_pasien']   = $d_pasien['id'];
     $_SESSION['nama_pasien'] = $d_pasien['nama_pasien'];
-    $_SESSION['role'] = 'pasien';
-    
-    session_write_close(); // Simpan session sebelum redirect
+    $_SESSION['role']        = 'pasien';
+    session_write_close();
     header("Location: /dashboard_pasien");
     exit();
 }
-
-// 3. Jika Email tidak ditemukan atau Password salah
-// Mengarahkan kembali ke rute /login yang terdaftar di vercel.json
+ 
+// 3. Login gagal
 header("Location: /login?error=1");
 exit();
