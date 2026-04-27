@@ -16,6 +16,7 @@
     { "src": "/monitoring", "dest": "/api/monitoring.php" },
     { "src": "/kelola_pasien", "dest": "/api/kelola_pasien.php" },
     { "src": "/kelola_petugas", "dest": "/api/kelola_petugas.php" },
+    { "src": "/tambah_antrean_terbaru", "dest": "/api/ambil_antrean_terbaru.php"}
     { "src": "/(.*)", "dest": "/$1" }
   ]
 }

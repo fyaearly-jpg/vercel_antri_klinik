@@ -42,15 +42,14 @@ $data_antrian = mysqli_fetch_assoc($query);
                 <?php if (!isset($_SESSION['punya_antrean'])) : ?>
                     <h2 class="text-2xl font-black text-slate-800 mb-2">Pendaftaran</h2>
                     <p class="mb-6 text-slate-500 text-sm">Halo, <strong><?php echo htmlspecialchars($nama_pasien); ?></strong>. Silakan pilih layanan.</p>
-                    <form method="POST" class="max-w-xs mx-auto">
-                        <select name="poli" required class="w-full p-4 mb-4 border border-slate-200 rounded-2xl bg-slate-50 outline-none focus:ring-2 focus:ring-emerald-500">
-                            <option value="">Pilih Poli</option>
+                    <form action="/tambah_antrean_terbaru" method="POST">
+                        <select name="poli" class="w-full p-3 border rounded-xl mb-4">
                             <option value="Umum">Poli Umum</option>
                             <option value="Gigi">Poli Gigi</option>
                             <option value="Anak">Poli Anak</option>
                         </select>
-                        <button type="submit" name="ambil_antrean" class="w-full bg-emerald-600 text-white py-4 rounded-2xl font-bold hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-200">
-                            Ambil Antrean
+                        <button type="submit" class="bg-emerald-600 text-white px-4 py-2 rounded-lg w-full">
+                            Ambil Nomor Antrean
                         </button>
                     </form>
 
