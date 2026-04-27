@@ -1,67 +1,98 @@
-<?php
-session_start();
-if (isset($_SESSION['role'])) {
-    if ($_SESSION['role'] === 'pasien') {
-        header("Location: dashboard_pasien.php");
-        exit();
-    } else {
-        header("Location: dashboard_petugas.php");
-        exit();
-    }
-}
-?>
-
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login Sistem - Klinik Sehat</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>Login - Klinik Sehat</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         body {
-            background: linear-gradient(rgba(13, 110, 253, 0.8), rgba(13, 110, 253, 0.8)), 
-                        url('https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=1350&q=80');
-            background-size: cover;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
+            justify-content: center;
         }
-        .card-login { border-radius: 20px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
     </style>
 </head>
-<body>
-
-<div class="container">
-    <div class="row justify-content-center">
-        <div class="col-md-4">
-            <div class="card card-login p-4">
-                <div class="text-center mb-4">
-                    <h3 class="fw-bold text-primary">KLINIK SEHAT</h3>
-                    <p class="text-muted small">Silakan masuk ke akun Anda</p>
-                </div>
-                
-                <form action="cek_login.php" method="POST">
-                    <div class="mb-3">
-                        <label class="form-label small">Email</label>
-                        <input type="email" name="email" class="form-control" placeholder="nama@email.com" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label small">Password</label>
-                        <input type="password" name="password" class="form-control" placeholder="********" required>
-                    </div>
-                    <div class="d-grid">
-                        <button type="submit" class="btn btn-primary py-2 fw-bold">MASUK</button>
-                    </div>
-                </form>
-
-                <div class="text-center mt-4">
-                    <p class="small text-muted">Belum punya akun? <a href="register.php" class="text-decoration-none">Daftar</a></p>
-                </div>
+<body class="p-4">
+ 
+<script>
+    // Kalau sudah login, langsung redirect
+    const role = localStorage.getItem('role');
+    if (role === 'pasien') window.location.href = 'dashboard_pasien.php';
+    else if (role) window.location.href = 'dashboard_petugas.php';
+</script>
+ 
+<div class="w-full max-w-md">
+    <div class="bg-white rounded-[2rem] shadow-2xl p-8">
+        <div class="text-center mb-8">
+            <div class="w-16 h-16 bg-emerald-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-hospital text-emerald-600 text-2xl"></i>
             </div>
+            <h2 class="text-2xl font-extrabold text-slate-800">KLINIK SEHAT</h2>
+            <p class="text-slate-400 text-sm mt-1">Silakan masuk ke akun Anda</p>
         </div>
+ 
+        <div id="alert-box" class="hidden bg-red-50 border border-red-200 text-red-600 text-sm px-4 py-3 rounded-xl mb-5"></div>
+ 
+        <form onsubmit="doLogin(event)" class="space-y-4">
+            <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-1">Email</label>
+                <input type="email" id="email" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-emerald-400 focus:border-transparent outline-none transition-all" placeholder="nama@email.com" required>
+            </div>
+            <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-1">Password</label>
+                <input type="password" id="password" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-emerald-400 focus:border-transparent outline-none transition-all" placeholder="••••••••" required>
+            </div>
+            <button type="submit" id="btn-login" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl transition-all shadow-lg shadow-emerald-200 mt-2">
+                MASUK
+            </button>
+        </form>
+ 
+        <p class="text-center text-sm text-slate-400 mt-6">
+            Belum punya akun? <a href="register.php" class="text-emerald-600 font-bold hover:underline">Daftar</a>
+        </p>
     </div>
 </div>
-
+ 
+<script>
+async function doLogin(e) {
+    e.preventDefault();
+    const btn   = document.getElementById('btn-login');
+    const alert = document.getElementById('alert-box');
+    btn.disabled    = true;
+    btn.textContent = 'Memproses...';
+    alert.classList.add('hidden');
+ 
+    const fd = new FormData();
+    fd.append('email',    document.getElementById('email').value);
+    fd.append('password', document.getElementById('password').value);
+ 
+    try {
+        const res  = await fetch('cek_login.php', { method: 'POST', body: fd });
+        const data = await res.json();
+ 
+        if (data.success) {
+            localStorage.setItem('role', data.role);
+            localStorage.setItem('nama', data.nama);
+            localStorage.setItem('id', data.id); window.location.href = 'dashboard_pasien.php'; 
+}
+        } else {
+            alert.textContent = data.message;
+            alert.classList.remove('hidden');
+            btn.disabled    = false;
+            btn.textContent = 'MASUK';
+        }
+    } catch (err) {
+        alert.textContent = 'Terjadi kesalahan koneksi, coba lagi.';
+        alert.classList.remove('hidden');
+        btn.disabled    = false;
+        btn.textContent = 'MASUK';
+    }
+}
+</script>
+ 
 </body>
 </html>
