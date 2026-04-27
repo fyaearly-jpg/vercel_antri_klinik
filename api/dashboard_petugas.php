@@ -24,7 +24,7 @@ $q_total = mysqli_query($koneksi, "SELECT COUNT(*) as total FROM antrian WHERE D
 $total_antrean = mysqli_fetch_assoc($q_total)['total'] ?? 0;
 
 // Antrean yang sedang dipanggil (agar sinkron dengan monitoring)
-$q_current = mysqli_query($koneksi, "SELECT nomor_antrian, poli FROM antrian WHERE status = 'dipanggil' AND DATE(created_at) = '$hari_ini' ORDER BY updated_at DESC LIMIT 1");
+$q_current = mysqli_query($koneksi, "SELECT nomor_antrean, poli FROM antrian WHERE status = 'dipanggil' AND DATE(created_at) = '$hari_ini' ORDER BY updated_at DESC LIMIT 1");
 $current = mysqli_fetch_assoc($q_current);
 $nomor_sekarang = $current['nomor_antrian'] ?? '--';
 $poli_sekarang = $current['poli'] ?? 'Tidak ada';
