@@ -1,22 +1,22 @@
 <?php
-// api/dashboard_admin.php
+// api/dashboard_petugas.php
 include 'koneksi.php';
 
-// 1. Baca Cookie
+// 1. Ambil data dari Cookie
 $cookie_raw = $_COOKIE['user_session'] ?? null;
 $cookie_data = $cookie_raw ? json_decode(base64_decode($cookie_raw), true) : null;
 
-// 2. DEBUG (Opsional): Jika masih terpental, hapus komentar di bawah untuk cek isi cookie
-// if (!$cookie_data) { die("Cookie tidak ditemukan atau gagal decode"); }
+// 2. Logika Proteksi: Izinkan jika role adalah 'petugas' ATAU 'admin'
+// Gunakan strtolower untuk menghindari masalah huruf besar/kecil
+$role = isset($cookie_data['role']) ? strtolower($cookie_data['role']) : '';
 
-// 3. Syarat: Harus Login dan Role-nya 'admin'
-if (!$cookie_data || $cookie_data['role'] !== 'admin') {
-    header("Location: /login"); // Gunakan rute vercel.json
+if (!$cookie_data || ($role !== 'petugas' && $role !== 'admin')) {
+    // Jika gagal, lempar ke login
+    header("Location: /login");
     exit();
 }
 
-$nama_admin = $cookie_data['nama'];
-// ...
+$nama_petugas = $cookie_data['nama'];
 ?>
 <!DOCTYPE html>
 <html lang="id">

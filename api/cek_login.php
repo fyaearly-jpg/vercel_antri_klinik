@@ -17,21 +17,25 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $user = mysqli_fetch_assoc($query_petugas);
 
     // Bagian Admin/Petugas di cek_login.php
+    // Di dalam api/cek_login.php bagian pengecekan petugas
     if ($user && password_verify($password, $user['password'])) {
         $session_data = [
             'id'    => $user['id'],
             'nama'  => $user['nama_lengkap'],
-            'role'  => $user['role']
+            'role'  => strtolower($user['role']) // Paksa jadi huruf kecil agar konsisten
         ];
         
-        // PENTING: Gunakan path "/" agar cookie bisa dibaca di semua halaman
+        // Pastikan path-nya "/" agar bisa dibaca di semua rute
         setcookie("user_session", base64_encode(json_encode($session_data)), time() + 3600, "/", "", true, true);
         
-        // Arahkan ke rute yang ada di vercel.json
-        header("Location: /dashboard_admin"); 
+        // Sesuaikan redirect dengan rute di vercel.json
+        if (strtolower($user['role']) === 'admin') {
+            header("Location: /dashboard_admin");
+        } else {
+            header("Location: /dashboard_petugas");
+        }
         exit();
     }
-
     // 4. Cek di tabel pasien jika data petugas tidak ditemukan
     $query_pasien = mysqli_query($koneksi, "SELECT * FROM pasien WHERE email = '$email'");
     $pasien = mysqli_fetch_assoc($query_pasien);
