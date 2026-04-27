@@ -49,7 +49,7 @@
         </form>
 
         <p class="text-center text-sm text-slate-400 mt-6">
-            Sudah punya akun? <a href="login.php" class="text-emerald-600 font-bold hover:underline">Masuk</a>
+            Sudah punya akun? <a href="/login" class="text-emerald-600 font-bold hover:underline">Masuk</a>
         </p>
     </div>
 </div>

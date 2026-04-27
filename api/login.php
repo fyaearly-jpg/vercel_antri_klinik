@@ -36,7 +36,7 @@
         </form>
 
         <p class="text-center text-sm text-slate-400 mt-6">
-            Belum punya akun? <a href="register.php" class="btn btn-primary">Daftar</a>
+            Belum punya akun? <a href="/register" class="text-emerald-600 font-bold hover:underline">Daftar</a>
         </p>
     </div>
 </div>

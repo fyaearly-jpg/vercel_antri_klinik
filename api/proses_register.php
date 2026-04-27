@@ -14,8 +14,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Perhatikan nama kolom tabel agar sama persis
     $query = "INSERT INTO pasien (email, nama_pasien, password, role) VALUES ('$email', '$nama_pasien', '$password', '$role')";
 
+    // Ganti redirect sukses menjadi seperti ini:
     if (mysqli_query($koneksi, $query)) {
-        echo "<script>alert('Registrasi sukses!'); window.location.href='login.php';</script>";
+        echo "<script>alert('Registrasi sukses!'); window.location.href='/login';</script>";
     } else {
         echo "Error: " . mysqli_error($koneksi);
     }

@@ -10,7 +10,7 @@
     { "src": "/proses_register", "dest": "/api/proses_register.php" },
     { "src": "/dashboard_pasien", "dest": "/api/dashboard_pasien.php" },
     { "src": "/dashboard_petugas", "dest": "/api/dashboard_petugas.php" },
-    { "src": "/api/(.*)", "dest": "/api/$1" },
-    { "src": "/(.*)", "dest": "/$1" }
+    { "src": "/dashboard_admin", "dest": "/api/dashboard_admin.php" },
+    { "src": "/api/(.*)", "dest": "/api/$1" }
   ]
 }
