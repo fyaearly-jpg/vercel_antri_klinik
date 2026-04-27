@@ -23,176 +23,190 @@ $data_antrian = mysqli_fetch_assoc($query);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Antrean Klinik</title>
+    <title>Antrian Pasien - ImuniCare</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <style>
-        body { background-color: #f3f4f6; font-family: 'Arial', sans-serif; }
-        .container-custom { display: flex; flex-direction: column; align-items: center; padding-top: 50px; padding-bottom: 50px; }
-        .card { background: white; width: 350px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); overflow: hidden; margin-bottom: 20px; }
-        .content-wrapper { padding: 20px; text-align: center; }
-        .nomor-besar { font-size: 64px; color: #059669; margin: 10px 0; font-weight: bold; }
-    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
-<body>
+<body class="bg-slate-50 font-sans min-h-screen">
 
-    <div class="container-custom">
-        <div class="card">
-            <div class="content-wrapper">
-                
-                <?php if (!isset($_SESSION['punya_antrean'])) : ?>
-                    <h2 class="text-xl font-bold text-emerald-600 mb-4">Pendaftaran</h2>
-                    <p class="mb-4">Halo <strong><?php echo htmlspecialchars($nama_pasien); ?></strong></p>
-                    <form method="POST">
-                        <select name="poli" required class="w-full p-3 mb-4 border rounded-xl bg-slate-50 outline-none">
-                            <option value="">Pilih Poli</option>
-                            <option value="Umum">Poli Umum</option>
-                            <option value="Gigi">Poli Gigi</option>
-                            <option value="Anak">Poli Anak</option>
-                        </select>
-                        <button type="submit" name="ambil_antrean" class="w-full bg-emerald-600 text-white py-3 rounded-xl font-bold hover:bg-emerald-700 transition-all">
-                            Ambil Antrean
-                        </button>
-                    </form>
-
-                <?php else : ?>
-                    <h2 class="text-xl font-bold text-slate-800 mb-2">Antrean Anda</h2>
-                    <div id="notif-panggil" class="hidden text-white p-2 rounded-lg mb-2 font-bold text-sm"></div>
-                    <div class="nomor-besar">
-                        <?php echo $_SESSION['punya_antrean']; ?>
-                    </div>
-                    <p class="text-slate-600">Poli: <strong><?php echo $_SESSION['poli_terpilih']; ?></strong></p>
-                    <div class="bg-emerald-50 p-3 rounded-xl my-4 text-emerald-700">
-                        Estimasi: <strong>15 Menit</strong>
-                    </div>
-                    
-                    <button onclick="bukaModal()" class="w-full bg-slate-900 text-white py-3 rounded-xl font-bold hover:bg-black transition-all">
-                        Selesai
-                    </button>
-                <?php endif; ?>
-
+    <nav class="bg-white border-b border-slate-200 sticky top-0 z-50">
+        <div class="max-w-5xl mx-auto px-4 h-16 flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <i class="fas fa-clinic-medical text-blue-600 text-xl"></i>
+                <span class="font-bold text-slate-800 tracking-tight">ImuniCare</span>
+            </div>
+            <div class="flex items-center gap-4">
+                <span class="text-sm font-medium text-slate-500 hidden md:block">Halo, <?php echo htmlspecialchars($nama_pasien); ?></span>
+                <a href="/logout" class="text-red-500 text-sm font-bold bg-red-50 px-4 py-2 rounded-full">Keluar</a>
             </div>
         </div>
+    </nav>
 
-        <button onclick="openBpsModal()" class="flex items-center gap-3 bg-white px-6 py-3 rounded-2xl shadow-sm border border-slate-200 hover:bg-emerald-50 transition-all group">
-            <i class="fas fa-chart-bar text-emerald-500 group-hover:scale-110 transition-transform"></i>
-            <span class="text-sm font-bold text-slate-700">Lihat Info Kesehatan Nasional</span>
-        </button>
-    </div>
+    <main class="max-w-5xl mx-auto px-4 py-8">
 
-    <div class="space-y-6">
-                <div class="bg-gradient-to-br from-indigo-600 to-blue-700 rounded-2xl shadow-lg p-6 text-white text-center">
-                    <p class="text-sm opacity-80 mb-1 font-bold italic uppercase tracking-wider">Panggilan Terkini</p>
-                    <h4 id="no-terbaru" class="text-5xl font-black mb-2">--</h4>
-                    <p id="poli-terbaru" class="text-xs bg-white/20 inline-block px-4 py-1 rounded-full backdrop-blur-sm">Menghubungkan...</p>
+        <?php if (!$antrian_saya): ?>
+            <div class="max-w-md mx-auto text-center space-y-8 py-10">
+                <div>
+                    <h1 class="text-3xl font-black text-slate-800">Selamat Datang</h1>
+                    <p class="text-slate-500">Silakan pilih poli tujuan untuk memulai antrean.</p>
                 </div>
 
-    <div id="modal-feedback" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-[999]">
-        <div class="bg-white p-8 rounded-3xl max-w-md w-full m-4 shadow-2xl">
-            <h2 class="text-xl font-bold mb-4 text-slate-800">Selesai Berobat?</h2>
-            <form action="logout.php" method="POST">
-                <div class="mb-4 text-left">
-                    <label class="block mb-2 font-bold text-slate-700">Tingkat Kepuasan</label>
-                    <select name="kepuasan" required class="w-full p-3 border rounded-xl bg-slate-50">
-                        <option value="Sangat Puas">Sangat Puas 😍</option>
-                        <option value="Puas">Puas 🙂</option>
-                        <option value="Cukup">Cukup 😐</option>
-                        <option value="Kurang">Kurang 🙁</option>
-                    </select>
+                <form action="/proses_ambil_antrean" method="POST" class="grid gap-4">
+                    <button name="poli" value="Umum" class="group p-6 bg-white border-2 border-slate-100 rounded-3xl text-left hover:border-blue-500 hover:shadow-xl hover:shadow-blue-100 transition-all">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-4">
+                                <div class="w-12 h-12 bg-blue-100 rounded-2xl flex items-center justify-center text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-all">
+                                    <i class="fas fa-user-md text-xl"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-slate-800">Poli Umum</h3>
+                                    <p class="text-xs text-slate-400">Pemeriksaan kesehatan umum</p>
+                                </div>
+                            </div>
+                            <i class="fas fa-chevron-right text-slate-300 group-hover:text-blue-500"></i>
+                        </div>
+                    </button>
+
+                    <button name="poli" value="Gigi" class="group p-6 bg-white border-2 border-slate-100 rounded-3xl text-left hover:border-emerald-500 hover:shadow-xl hover:shadow-emerald-100 transition-all">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-4">
+                                <div class="w-12 h-12 bg-emerald-100 rounded-2xl flex items-center justify-center text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white transition-all">
+                                    <i class="fas fa-tooth text-xl"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-slate-800">Poli Gigi</h3>
+                                    <p class="text-xs text-slate-400">Perawatan gigi dan mulut</p>
+                                </div>
+                            </div>
+                            <i class="fas fa-chevron-right text-slate-300 group-hover:text-emerald-500"></i>
+                        </div>
+                    </button>
+
+                    <button name="poli" value="KIA" class="group p-6 bg-white border-2 border-slate-100 rounded-3xl text-left hover:border-pink-500 hover:shadow-xl hover:shadow-pink-100 transition-all">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-4">
+                                <div class="w-12 h-12 bg-pink-100 rounded-2xl flex items-center justify-center text-pink-600 group-hover:bg-pink-600 group-hover:text-white transition-all">
+                                    <i class="fas fa-baby text-xl"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-slate-800">Poli KIA</h3>
+                                    <p class="text-xs text-slate-400">Kesehatan Ibu dan Anak</p>
+                                </div>
+                            </div>
+                            <i class="fas fa-chevron-right text-slate-300 group-hover:text-pink-500"></i>
+                        </div>
+                    </button>
+                </form>
+            </div>
+
+        <?php else: ?>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                
+                <div class="lg:col-span-2 space-y-6">
+                    <div id="notif-panggil" class="hidden p-6 rounded-3xl text-center text-white font-black animate-bounce shadow-2xl">
+                        SILAKAN MASUK KE POLI SEKARANG!
+                    </div>
+
+                    <div class="bg-white rounded-3xl border border-slate-200 p-8 shadow-sm text-center relative overflow-hidden">
+                        <div class="absolute top-0 right-0 p-4">
+                            <span class="bg-blue-600 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase">Tiket Aktif</span>
+                        </div>
+                        <p class="text-slate-400 font-bold text-sm uppercase tracking-widest mb-2">Nomor Antrean Anda</p>
+                        <h2 class="text-7xl font-black text-slate-800 mb-4"><?php echo $antrian_saya['nomor_antrian']; ?></h2>
+                        <div class="inline-flex items-center gap-2 bg-slate-100 px-4 py-2 rounded-full">
+                            <i class="fas fa-hospital-user text-blue-500"></i>
+                            <span class="font-bold text-slate-600"><?php echo $antrian_saya['poli']; ?></span>
+                        </div>
+                        <div id="status-badge" class="mt-4 font-bold text-blue-600 uppercase text-xs">
+                             Status: <?php echo $antrian_saya['status']; ?>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm">
+                        <h3 class="font-bold text-slate-800 mb-4 flex items-center gap-2">
+                            <i class="fas fa-info-circle text-blue-500"></i> Info Kesehatan Nasional (BPS)
+                        </h3>
+                        <?php include 'tabel_bps.php'; ?>
+                    </div>
                 </div>
-                <div class="mb-6 text-left">
-                    <label class="block mb-2 font-bold text-slate-700">Saran</label>
-                    <textarea name="saran" class="w-full p-3 border rounded-xl bg-slate-50" rows="3" placeholder="Masukkan saran anda..."></textarea>
+
+                <div class="space-y-6">
+                    <div class="bg-slate-900 rounded-3xl p-6 text-white text-center shadow-xl">
+                        <p class="text-[10px] font-bold text-slate-400 uppercase mb-4 tracking-tighter">Sedang Dilayani</p>
+                        <h4 id="no-terbaru" class="text-5xl font-black mb-1">--</h4>
+                        <p id="poli-terbaru" class="text-xs text-blue-400 font-bold uppercase">Menunggu Data...</p>
+                    </div>
+
+                    <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm">
+                        <h3 class="font-bold text-slate-800 mb-4">Feedback Layanan</h3>
+                        <form action="/api/simpan_feedback.php" method="POST" class="space-y-3">
+                            <input type="hidden" name="nama_pasien" value="<?php echo htmlspecialchars($nama_pasien); ?>">
+                            <select name="kepuasan" class="w-full p-3 bg-slate-50 border border-slate-100 rounded-xl text-sm outline-none focus:border-blue-500" required>
+                                <option value="">Tingkat Kepuasan?</option>
+                                <option value="Sangat Puas">Sangat Puas 😊</option>
+                                <option value="Puas">Puas 🙂</option>
+                                <option value="Kurang">Kurang ☹️</option>
+                            </select>
+                            <textarea name="saran" placeholder="Saran Anda..." class="w-full p-3 bg-slate-50 border border-slate-100 rounded-xl text-sm outline-none focus:border-blue-500" rows="3" required></textarea>
+                            <button type="submit" class="w-full py-3 bg-blue-600 text-white rounded-xl font-bold text-sm hover:bg-blue-700 transition-all">Kirim Masukan</button>
+                        </form>
+                    </div>
                 </div>
-                <div class="flex gap-2">
-                    <button type="button" onclick="tutupModal()" class="flex-1 bg-slate-100 py-3 rounded-xl font-bold text-slate-600">Batal</button>
-                    <button type="submit" name="kirim_feedback" class="flex-1 bg-emerald-500 text-white py-3 rounded-xl font-bold hover:bg-emerald-600">Kirim & Selesai</button>
-                </div>
-            </form>
-        </div>
-    </div>
+            </div>
+        <?php endif; ?>
+
+    </main>
 
     <script>
-    // JS MODAL FEEDBACK
-    function bukaModal() {
-        const modal = document.getElementById('modal-feedback');
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
-    }
-    function tutupModal() {
-        const modal = document.getElementById('modal-feedback');
-        modal.classList.add('hidden');
-        modal.classList.remove('flex');
-    }
+        // Logika Suara & Cek Status Otomatis
+        let statusTerakhir = "<?php echo $antrian_saya['status'] ?? 'none'; ?>";
+        const nomorSaya = "<?php echo $antrian_saya['nomor_antrian'] ?? ''; ?>";
+        const poliSaya = "<?php echo $antrian_saya['poli'] ?? ''; ?>";
 
-    // JS SUARA & CEK STATUS (Tetap sama seperti kodemu)
-    window.speechSynthesis.getVoices();
-    window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+        function ejaNomor(nomor) {
+            return nomor.split('').join(' ');
+        }
 
-    function getVoiceWanita() {
-        const voices = window.speechSynthesis.getVoices();
-        let v = voices.find(v => v.lang === 'id-ID' && v.name.toLowerCase().includes('google'));
-        if (!v) v = voices.find(v => v.lang === 'id-ID');
-        return v || null;
-    }
+        function panggilSuara(nomor, poli) {
+            window.speechSynthesis.cancel();
+            const teks = `Nomor antrean ${ejaNomor(nomor)}, silakan masuk ke Poli ${poli}.`;
+            const utterance = new SpeechSynthesisUtterance(teks);
+            utterance.lang = 'id-ID';
+            window.speechSynthesis.speak(utterance);
+        }
 
-    function ejaNomorAntrean(nomor) {
-        const bagian = nomor.split('-');
-        if (bagian.length !== 2) return nomor;
-        const huruf = bagian[0].toUpperCase();
-        const angka = parseInt(bagian[1], 10);
-        const namaHuruf = { 'A': 'A', 'B': 'Be', 'C': 'Ce', 'D': 'De', 'E': 'E', 'F': 'Ef', 'G': 'Ge', 'H': 'Ha', 'I': 'I', 'J': 'Je', 'K': 'Ka', 'L': 'El', 'M': 'Em', 'N': 'En', 'O': 'O', 'P': 'Pe', 'Q': 'Qi', 'R': 'Er', 'S': 'Es', 'T': 'Te', 'U': 'U', 'V': 'Fe', 'W': 'We', 'X': 'Eks', 'Y': 'Ye', 'Z': 'Zet' };
-        return `${namaHuruf[huruf] || huruf} ${angka}`;
-    }
+        function cekStatus() {
+            if (!nomorSaya) return;
 
-    function ucapkan(teks, onSelesai) {
-        const ssu = new SpeechSynthesisUtterance(teks);
-        ssu.lang = 'id-ID';
-        ssu.rate = 0.85;
-        ssu.pitch = 1.3;
-        const voice = getVoiceWanita();
-        if (voice) ssu.voice = voice;
-        if (onSelesai) ssu.onend = onSelesai;
-        window.speechSynthesis.speak(ssu);
-    }
+            // 1. Ambil Panggilan Terkini (Untuk Sidebar)
+            fetch('/api/ambil_antrean_terbaru.php')
+                .then(res => res.json())
+                .then(data => {
+                    document.getElementById('no-terbaru').innerText = data.nomor_antrian;
+                    document.getElementById('poli-terbaru').innerText = data.poli;
+                });
 
-    function panggilSuara(nomor, poli) {
-        window.speechSynthesis.cancel();
-        const nomorEja = ejaNomorAntrean(nomor);
-        const teks = `Nomor antrean ${nomorEja}, silakan masuk ke Poli ${poli}.`;
-        ucapkan(teks, () => {
-            setTimeout(() => ucapkan(teks, null), 1200);
-        });
-    }
-
-    let statusTerakhir = 'menunggu';
-    const nomorAntrean = "<?php echo $_SESSION['punya_antrean'] ?? ''; ?>";
-    const poliAntrean = "<?php echo $_SESSION['poli_terpilih'] ?? ''; ?>";
-
-    function cekStatus() {
-        if (!nomorAntrean) return;
-        fetch(`cek_status_pasien.php?nomor=${nomorAntrean}`)
-            .then(res => res.json())
-            .then(data => {
-                if (data.status === 'dipanggil' && statusTerakhir !== 'dipanggil') {
-                    panggilSuara(nomorAntrean, poliAntrean);
-                    statusTerakhir = 'dipanggil';
-                    const notif = document.getElementById('notif-panggil');
-                    if (notif) {
-                        notif.innerText = "SILAKAN MASUK KE POLI!";
+            // 2. Cek Status Nomor Saya
+            fetch(`/api/cek_status_antrean.php?nomor=${nomorSaya}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'dipanggil' && statusTerakhir !== 'dipanggil') {
+                        statusTerakhir = 'dipanggil';
+                        panggilSuara(nomorSaya, poliSaya);
+                        
+                        const notif = document.getElementById('notif-panggil');
                         notif.classList.remove('hidden');
-                        notif.classList.add('bg-emerald-600', 'animate-bounce');
+                        notif.classList.add('bg-emerald-500');
+                        document.getElementById('status-badge').innerText = "Status: DIPANGGIL";
                     }
-                }
-            })
-            .catch(err => console.error("Error:", err));
-    }
+                });
+        }
 
-    if (nomorAntrean) {
-        setInterval(cekStatus, 3000);
-    }
+        // Jalankan polling setiap 5 detik
+        if(nomorSaya) {
+            setInterval(cekStatus, 5000);
+            cekStatus();
+        }
     </script>
-
-    <?php include 'tabel_bps.php'; ?>
 </body>
 </html>
