@@ -13,7 +13,7 @@ $koneksi = mysqli_init();
 mysqli_ssl_set($koneksi, NULL, NULL, NULL, NULL, NULL);
 
 // Melakukan koneksi
-$real_koenksi = mysqli_real_koneksi(
+$real_koneksi = mysqli_real_koneksi(
     $koneksi, 
     $host, 
     $user, 
