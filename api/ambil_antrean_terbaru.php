@@ -16,8 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $id_pasien = $cookie_data['id']; 
     $tanggal = date('Y-m-d');
 
-    // 2. AMBIL NOMOR TERAKHIR
-    // Gunakan 'nomor_antrean' sesuai pesan error database kamu
+    // 2. Cari nomor terakhir di tabel 'antrian' pada kolom 'nomor_antrean'
     $query_max = "SELECT MAX(CAST(SUBSTRING(nomor_antrean, 3) AS UNSIGNED)) as max_no 
                   FROM antrian 
                   WHERE poli = '$poli' AND DATE(created_at) = '$tanggal'";
@@ -26,24 +25,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $row = mysqli_fetch_assoc($res_max);
     $next_no = ($row['max_no'] ?? 0) + 1;
 
-    // 3. FORMAT NOMOR (Contoh: U-1, G-1)
+    // 3. Buat format nomor baru (Contoh: U-1)
     $kode_poli = strtoupper(substr($poli, 0, 1));
     $nomor_baru = $kode_poli . "-" . $next_no;
 
-    // 4. INSERT KE DATABASE
-    // SAYA SAMAKAN SEMUA MENJADI 'nomor_antrean' (sesuai error mysqli kamu)
+    // 4. Proses Insert ke tabel 'antrian' kolom 'nomor_antrean'
+    // Pastikan SEMUA variabel string pakai tanda petik tunggal
     $query_insert = "INSERT INTO antrian (id_pasien, nomor_antrean, poli, status, created_at) 
                      VALUES ('$id_pasien', '$nomor_baru', '$poli', 'menunggu', NOW())";
 
+    // Bagian yang tadi bermasalah
     if (mysqli_query($koneksi, $query_insert)) {
         header("Location: /dashboard_pasien?status=sukses");
         exit();
     } else {
-        // Tampilkan error jika query gagal
-        die("Gagal simpan antrean: " . mysqli_error($koneksi));
+        // Jika masih error, ini akan menampilkan pesan error asli dari MySQL
+        die("Error Database: " . mysqli_error($koneksi));
     }
+
 } else {
-    // Jika akses langsung tanpa POST
     header("Location: /dashboard_pasien");
     exit();
 }
