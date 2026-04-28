@@ -1,11 +1,10 @@
 {
   "functions": {
-    "api/**/.php": {
+    "api/*.php": {
       "runtime": "vercel-php@0.7.2"
     }
   },
-  "rewrites": [
-    { "src": "/api/(.*)", "dest": "/api/$1" },
+  "routes": [
     { "src": "/login", "dest": "/api/login.php" },
     { "src": "/register", "dest": "/api/register.php" },
     { "src": "/proses_register", "dest": "/api/proses_register.php" },
@@ -15,19 +14,18 @@
     { "src": "/dashboard_pasien", "dest": "/api/dashboard_pasien.php" },
     { "src": "/logout", "dest": "/api/logout.php" },
     { "src": "/monitoring", "dest": "/api/monitoring.php" },
+    { "src": "/display", "dest": "/api/display.php" },
     { "src": "/kelola_pasien", "dest": "/api/kelola_pasien.php" },
     { "src": "/kelola_petugas", "dest": "/api/kelola_petugas.php" },
     { "src": "/tambah_antrian_terbaru", "dest": "/api/ambil_antrean_terbaru.php" },
     { "src": "/get_antrian_sekarang", "dest": "/api/get_antrian_sekarang.php" },
-    { "src": "/display", "dest": "/api/display.php" },
-    { "src": "/kelola_pasien", "dest": "/api/kelola_pasien.php" },
-    { "src": "/kelola_petugas", "dest": "/api/kelola_petugas.php" },
     { "src": "/hapus_feedback", "dest": "/api/hapus_feedback.php" },
     { "src": "/hapus_user", "dest": "/api/hapus_user.php" },
     
-    { "source": "/plugins/(.*)", "destination": "/plugins/$1" },
-    { "source": "/dist/(.*)", "destination": "/dist/$1" },
-    { "source": "/js/(.*)", "destination": "/js/$1" },
+    { "src": "/plugins/(.*)", "dest": "/plugins/$1" },
+    { "src": "/dist/(.*)", "dest": "/dist/$1" },
+    { "src": "/js/(.*)", "dest": "/js/$1" },
+    { "src": "/api/(.*)", "dest": "/api/$1.php" },
     { "src": "/(.*)", "dest": "/$1" }
   ]
 }
