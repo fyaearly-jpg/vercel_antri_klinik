@@ -8,8 +8,9 @@ if (!$cookie_data || $cookie_data['role'] !== 'pasien') {
     exit();
 }
  
-$id_user   = $cookie_data['id'];
-$nama_user = $cookie_data['nama'];
+error_reporting(E_ALL);
+$id_user   = $cookie_data['id'] ?? 'KOSONG';
+$nama_user = $cookie_data['nama'] ?? 'KOSONG';
 $tanggal   = date('Y-m-d');
  
 $query        = mysqli_query($koneksi, "SELECT * FROM antrian WHERE id_pasien='$id_user' AND DATE(created_at)='$tanggal' ORDER BY id DESC LIMIT 1");
