@@ -106,7 +106,7 @@ if ($res && mysqli_num_rows($res) > 0) {
 
         <div class="grid md:grid-cols-2 gap-8 mb-10">
             
-            <a href="monitoring.php" class="group bg-white p-8 rounded-[2.5rem] shadow-xl shadow-slate-200/50 hover:shadow-emerald-200/50 transition-all border border-slate-100 hover:-translate-y-2">
+            <a href="/monitoring.php" class="group bg-white p-8 rounded-[2.5rem] shadow-xl shadow-slate-200/50 hover:shadow-emerald-200/50 transition-all border border-slate-100 hover:-translate-y-2">
                 <div class="w-16 h-16 bg-emerald-100 rounded-2xl flex items-center justify-center mb-6 text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white transition-all duration-300">
                     <i class="fas fa-chalkboard-user text-2xl"></i>
                 </div>
@@ -118,7 +118,7 @@ if ($res && mysqli_num_rows($res) > 0) {
                 </div>
             </a>
 
-            <a href="display.php" target="_blank" class="group bg-white p-8 rounded-[2.5rem] shadow-xl shadow-slate-200/50 hover:shadow-blue-200/50 transition-all border border-slate-100 hover:-translate-y-2">
+            <a href="/display.php" target="_blank" class="group bg-white p-8 rounded-[2.5rem] shadow-xl shadow-slate-200/50 hover:shadow-blue-200/50 transition-all border border-slate-100 hover:-translate-y-2">
                 <div class="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center mb-6 text-blue-500 group-hover:bg-blue-500 group-hover:text-white transition-all duration-300">
                     <i class="fas fa-desktop text-2xl"></i>
                 </div>
