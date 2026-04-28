@@ -23,7 +23,9 @@ $hari_ini = date('Y-m-d'); // Variabel wajib untuk filter data hari ini
 $q_total = mysqli_query($koneksi, "SELECT COUNT(*) as total FROM antrian WHERE DATE(created_at) = '$hari_ini'");
 $total_antrean = mysqli_fetch_assoc($q_total)['total'] ?? 0;
 
-// Antrean yang sedang dipanggil (agar sinkron dengan monitoring)
+$q_selesai = mysqli_query($koneksi, "SELECT COUNT(*) as total FROM antrian WHERE status = 'selesai' AND DATE(created_at) = '$hari_ini'");
+$total_selesai = mysqli_fetch_assoc($q_selesai)['total'] ?? 0;
+
 $q_current = mysqli_query($koneksi, "SELECT nomor_antrean, poli FROM antrian WHERE status = 'dipanggil' AND DATE(created_at) = '$hari_ini' ORDER BY updated_at DESC LIMIT 1");
 $current = mysqli_fetch_assoc($q_current);
 $nomor_sekarang = $current['nomor_antrean'] ?? '--';
@@ -71,7 +73,7 @@ if ($res && mysqli_num_rows($res) > 0) {
                     <i class="fas fa-user-md text-3xl"></i>
                 </div>
                 <div>
-                    <h1 class="text-2xl md:text-3xl font-bold text-slate-800">Halo, <?php echo htmlspecialchars($nama_lengkap); ?>!</h1>
+                    <h1 class="text-2xl md:text-3xl font-bold text-slate-800">Halo, <?php echo htmlspecialchars($nama_petugas); ?>!</h1>
                     <p class="text-slate-500">Selamat bertugas di <span class="text-emerald-600 font-bold uppercase tracking-wider text-sm"><?php echo $role_user; ?> Panel</span></p>
                 </div>
             </div>
@@ -83,7 +85,7 @@ if ($res && mysqli_num_rows($res) > 0) {
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
             <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
                 <p class="text-slate-400 text-xs font-bold uppercase tracking-widest mb-1">Total Antrean</p>
-                <h3 class="text-3xl font-black text-slate-800"><?php echo $total_pasien; ?></h3>
+                <h3 class="text-3xl font-black text-slate-800"><?php echo $total_antrean; ?></h3>
             </div>
             <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
                 <p class="text-slate-400 text-xs font-bold uppercase tracking-widest mb-1">Sudah Dilayani</p>
