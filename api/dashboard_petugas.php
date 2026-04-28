@@ -78,7 +78,7 @@ if ($res && mysqli_num_rows($res) > 0) {
                     <p class="text-slate-500">Selamat bertugas di <span class="text-emerald-600 font-bold uppercase tracking-wider text-sm"><?php echo $role_user; ?> Panel</span></p>
                 </div>
             </div>
-            <a href="logout.php" class="w-full md:w-auto bg-red-500 hover:bg-red-600 text-white px-8 py-3 rounded-2xl font-bold transition-all shadow-lg shadow-red-100 flex items-center justify-center gap-2 active:scale-95">
+            <a href="/api/logout.php" class="w-full md:w-auto bg-red-500 hover:bg-red-600 text-white px-8 py-3 rounded-2xl font-bold transition-all shadow-lg shadow-red-100 flex items-center justify-center gap-2 active:scale-95">
                 <i class="fas fa-sign-out-alt"></i> Keluar Sistem
             </a>
         </div>
