@@ -45,7 +45,8 @@ $punya_antrean_aktif = ($data_antrian && $data_antrian['status'] !== 'selesai');
                 <?php if (!$punya_antrean_aktif) : ?>
                     <h2 class="text-2xl font-black text-slate-800 mb-2">Pendaftaran</h2>
                     <p class="mb-6 text-slate-500 text-sm">Halo, <strong><?php echo htmlspecialchars($nama_user); ?></strong>. Silakan pilih layanan.</p>
-                    <form action="/api/ambil_antrean_terbaru.php" method="POST">                        <select name="poli" class="w-full p-3 border rounded-xl mb-4">
+                    <form action="/api/ambil_antrean_terbaru.php" method="POST">
+                        <select name="poli" class="w-full p-3 border rounded-xl mb-4">
                             <option value="Umum">Poli Umum</option>
                             <option value="Gigi">Poli Gigi</option>
                             <option value="Anak">Poli Anak</option>
