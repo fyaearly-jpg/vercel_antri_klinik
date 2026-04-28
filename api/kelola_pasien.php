@@ -1,14 +1,13 @@
 <?php
 include 'koneksi.php';
 $cookie_data = isset($_COOKIE['user_session']) ? json_decode(base64_decode($_COOKIE['user_session']), true) : null;
-
+ 
 if (!$cookie_data || $cookie_data['role'] !== 'admin') {
     header("Location: /login.php");
     exit();
 }
-
+ 
 $query = mysqli_query($koneksi, "SELECT * FROM pasien ORDER BY nama_pasien ASC");
-
 ?>
 <!DOCTYPE html>
 <html>
@@ -30,20 +29,21 @@ $query = mysqli_query($koneksi, "SELECT * FROM pasien ORDER BY nama_pasien ASC")
             <tbody>
                 <?php while($row = mysqli_fetch_assoc($query)) : ?>
                 <tr class="border-b">
-                    <td class="p-3"><?= $row['nama_pasien']; ?></td>
-                    <td class="p-3"><?= $row['email']; ?></td>
+                    <td class="p-3"><?= htmlspecialchars($row['nama_pasien']); ?></td>
+                    <td class="p-3"><?= htmlspecialchars($row['email']); ?></td>
                     <td class="p-3">
-                        <a href="/api/hapus_user.php?id=<?php echo $row['id']; ?>&tabel=pasien" 
-                        onclick="return confirm('Yakin ingin menghapus?')" 
-                        class="text-red-500">
-                        Hapus
-                    </a>
+                        <a href="/api/hapus_user.php?id=<?php echo $row['id']; ?>&tabel=pasien"
+                           onclick="return confirm('Yakin ingin menghapus?')"
+                           class="text-red-500 font-bold hover:underline">
+                            Hapus
+                        </a>
+                    </td> <!-- ✅ FIX: Tag </td> yang hilang ditambahkan -->
                 </tr>
                 <?php endwhile; ?>
             </tbody>
         </table>
         <br>
-        <a href="dashboard_admin.php" class="text-blue-500 underline">Kembali ke Dashboard</a>
+        <a href="/api/dashboard_admin.php" class="text-blue-500 underline">Kembali ke Dashboard</a>
     </div>
 </body>
 </html>
