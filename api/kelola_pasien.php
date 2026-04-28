@@ -33,7 +33,7 @@ $query = mysqli_query($koneksi, "SELECT * FROM pasien ORDER BY nama_pasien ASC")
                     <td class="p-3"><?= $row['nama_pasien']; ?></td>
                     <td class="p-3"><?= $row['email']; ?></td>
                     <td class="p-3">
-                        <a href="hapus_user.php?id=<?php echo $row['id']; ?>&tabel=pasien" 
+                        <a href="/api/hapus_user.php?id=<?php echo $row['id']; ?>&tabel=pasien" 
                         onclick="return confirm('Yakin ingin menghapus?')" 
                         class="text-red-500">
                         Hapus
