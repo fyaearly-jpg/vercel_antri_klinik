@@ -5,6 +5,7 @@
     }
   },
   "routes": [
+    { "src": "/api/(.*)", "dest": "/api/$1" },
     { "src": "/login", "dest": "/api/login.php" },
     { "src": "/register", "dest": "/api/register.php" },
     { "src": "/proses_register", "dest": "/api/proses_register.php" },
@@ -16,7 +17,7 @@
     { "src": "/monitoring", "dest": "/api/monitoring.php" },
     { "src": "/kelola_pasien", "dest": "/api/kelola_pasien.php" },
     { "src": "/kelola_petugas", "dest": "/api/kelola_petugas.php" },
-    { "src": "/tambah_antrian", "dest": "/api/ambil_antrean_terbaru.php" }
+    { "src": "/tambah_antrian", "dest": "/api/ambil_antrean_terbaru.php" },
     { "src": "/(.*)", "dest": "/$1" }
   ]
 }
