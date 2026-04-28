@@ -19,6 +19,7 @@
     { "src": "/kelola_petugas", "dest": "/api/kelola_petugas.php" },
     { "src": "/tambah_antrian_terbaru", "dest": "/api/ambil_antrean_terbaru.php" },
     { "src": "/get_antrian_sekarang", "dest": "/api/get_antrian_sekarang.php" },
+    { "src": "/cek_status_antrean", "dest": "/api/cek_status_antrean.php" },
     { "src": "/hapus_feedback", "dest": "/api/hapus_feedback.php" },
     { "src": "/hapus_user", "dest": "/api/hapus_user.php" },
     
@@ -28,7 +29,7 @@
     { "src": "/dist/(.*)", "dest": "/dist/$1" },
     { "src": "/plugins/(.*)", "dest": "/plugins/$1" },
 
-    { "src": "/api/(.*)", "dest": "/api/$1.php" },
+    { "src": "/api/(.*).php", "dest": "/api/$1.php" },
     { "src": "/(.*)", "dest": "/$1" }
   ]
 }
