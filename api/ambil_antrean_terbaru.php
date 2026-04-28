@@ -1,18 +1,18 @@
 <?php
 header("Content-Type: application/json");
 include 'koneksi.php';
- 
+
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     echo json_encode(["success" => false, "message" => "Method tidak valid"]);
     exit();
 }
- 
+
 // Ambil dan bersihkan input
 $poli      = trim($_POST['poli'] ?? '');
 $id_pasien = trim($_POST['id_pasien'] ?? '');
 $tanggal   = date('Y-m-d');
- 
-// Validasi
+
+// Validasi data kosong
 if (empty($poli) || empty($id_pasien)) {
     echo json_encode([
         "success" => false,
@@ -21,17 +21,17 @@ if (empty($poli) || empty($id_pasien)) {
     ]);
     exit();
 }
- 
-// Escape SETELAH validasi
-$poli      = mysqli_real_escape_string($koneksi, $poli);
-$id_pasien = mysqli_real_escape_string($koneksi, $id_pasien);
- 
-// Cek sudah punya antrean hari ini
+
+// Escape string untuk query manual
+$poli_escaped      = mysqli_real_escape_string($koneksi, $poli);
+$id_pasien_escaped = mysqli_real_escape_string($koneksi, $id_pasien);
+
+// 1. Cek apakah user sudah punya antrean hari ini
 $cek = mysqli_query($koneksi,
-    "SELECT nomor_antrean, poli, status FROM antrian
-     WHERE id_pasien='$id_pasien' AND DATE(created_at)='$tanggal' LIMIT 1"
+    "SELECT nomor_antrean, poli, status FROM antrian 
+     WHERE id_pasien='$id_pasien_escaped' AND DATE(created_at)='$tanggal' LIMIT 1"
 );
- 
+
 if ($cek && mysqli_num_rows($cek) > 0) {
     $ex = mysqli_fetch_assoc($cek);
     echo json_encode([
@@ -43,19 +43,28 @@ if ($cek && mysqli_num_rows($cek) > 0) {
     ]);
     exit();
 }
- 
-// Hitung nomor urut per poli hari ini
-$kode_poli  = strtoupper(substr($poli, 0, 1));
-$q_max      = mysqli_query($koneksi, "SELECT COUNT(*) as total FROM antrian WHERE poli='$poli' AND DATE(created_at)='$tanggal'");
-$row_max    = mysqli_fetch_assoc($q_max);
-$next_no    = (int)($row_max['total'] ?? 0) + 1;
+
+// 2. Hitung nomor urut berikutnya (Gunakan MAX agar lebih akurat)
+$kode_poli = strtoupper(substr($poli, 0, 1)); // Ambil inisial poli (contoh: U, G, K)
+$q_max = mysqli_query($koneksi, "SELECT nomor_antrean FROM antrian WHERE poli='$poli_escaped' AND DATE(created_at)='$tanggal' ORDER BY id DESC LIMIT 1");
+$row_max = mysqli_fetch_assoc($q_max);
+
+if ($row_max) {
+    // Ambil angka setelah tanda "-" (contoh U-5 -> ambil 5)
+    $last_no = explode('-', $row_max['nomor_antrean']);
+    $next_no = (int)end($last_no) + 1;
+} else {
+    $next_no = 1;
+}
 $nomor_baru = $kode_poli . "-" . $next_no;
- 
-// Insert - gunakan waktu_daftar sesuai struktur tabel
-$sql = "INSERT INTO antrian (id_pasien, nomor_antrean, poli, status, waktu_daftar, created_at)
-        VALUES ('$id_pasien', '$nomor_baru', '$poli', 'menunggu', NOW(), NOW())";
- 
-if (mysqli_query($koneksi, $sql)) {
+
+// 3. Simpan ke database menggunakan PREPARED STATEMENT (Mengatasi Error Incorrect Value)
+$stmt = $koneksi->prepare("INSERT INTO antrian (id_pasien, nomor_antrean, poli, status, waktu_daftar, created_at) VALUES (?, ?, ?, 'menunggu', NOW(), NOW())");
+
+// Gunakan "iss" jika id_pasien adalah angka (integer), atau "sss" jika teks/string
+$stmt->bind_param("sss", $id_pasien, $nomor_baru, $poli);
+
+if ($stmt->execute()) {
     echo json_encode([
         "success" => true,
         "nomor"   => $nomor_baru,
@@ -65,8 +74,9 @@ if (mysqli_query($koneksi, $sql)) {
 } else {
     echo json_encode([
         "success" => false,
-        "message" => "Gagal simpan: " . mysqli_error($koneksi),
-        "debug"   => ["nomor_baru" => $nomor_baru, "id_pasien" => $id_pasien, "poli" => $poli]
+        "message" => "Gagal simpan: " . $stmt->error
     ]);
 }
+
+$stmt->close();
 ?>
