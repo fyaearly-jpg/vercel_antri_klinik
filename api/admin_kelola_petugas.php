@@ -12,7 +12,7 @@ if (!isset($_SESSION['login']) || $_SESSION['role'] !== 'super_admin') {
 if (isset($_GET['hapus'])) {
     $id = $_GET['hapus'];
     mysqli_query($conn, "DELETE FROM users WHERE id = $id");
-    header("Location: kelola_petugas.php");
+    header("Location: /kelola_petugas.php");
 }
 
 $petugas = mysqli_query($koneksi, "SELECT * FROM users ORDER BY role ASC");
