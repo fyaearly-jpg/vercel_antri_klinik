@@ -4,7 +4,7 @@ session_start();
 
 // Proteksi: Hanya admin/petugas yang bisa akses
 if (!isset($_SESSION['role']) || $_SESSION['role'] === 'pasien') {
-    header("Location: index.php");
+    header("Location: /index.php");
     exit();
 }
 
