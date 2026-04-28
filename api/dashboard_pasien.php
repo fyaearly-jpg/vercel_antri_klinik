@@ -61,7 +61,7 @@ $punya_antrean_aktif = ($data_antrian && $data_antrian['status'] !== 'selesai');
                     
                     <span class="inline-block px-4 py-1 bg-emerald-100 text-emerald-700 rounded-full text-xs font-bold uppercase tracking-widest mb-4">Nomor Anda</span>
                     <div class="nomor-besar mb-2">
-                        <?php echo $data_antrian['nomor_antrian']; ?>
+                        <?php echo $data_antrian['nomor_antrean']; ?>
                     </div>
                     <p class="text-slate-500 font-medium mb-6">Poli Tujuan: <span class="text-slate-800 font-bold"><?php echo $data_antrian['poli']; ?></span></p>
                     
@@ -147,7 +147,7 @@ $punya_antrean_aktif = ($data_antrian && $data_antrian['status'] !== 'selesai');
         fetch('/api/get_antrian_sekarang.php') // Gunakan path yang benar
             .then(res => res.json())
             .then(data => {
-                document.getElementById('no-terbaru').innerText = data.nomor_antrian || '--';
+                document.getElementById('no-terbaru').innerText = data.nomor_antrean || '--';
                 document.getElementById('poli-terbaru').innerText = data.poli || 'Menunggu...';
             });
     }
@@ -157,7 +157,7 @@ $punya_antrean_aktif = ($data_antrian && $data_antrian['status'] !== 'selesai');
 
     // TTS & Cek Status
     let statusTerakhir = '<?php echo $data_antrian['status'] ?? "menunggu"; ?>';
-    const nomorAntrean = '<?php echo $data_antrian['nomor_antrian'] ?? ""; ?>';
+    const nomorAntrean = '<?php echo $data_antrian['nomor_antrean'] ?? ""; ?>';
     const poliAntrean = '<?php echo $data_antrian['poli'] ?? ""; ?>';
 
     function cekStatus() {

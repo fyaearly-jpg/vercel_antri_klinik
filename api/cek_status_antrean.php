@@ -8,7 +8,7 @@ $cookie_raw = $_COOKIE['user_session'] ?? null;
 $cookie_data = $cookie_raw ? json_decode(base64_decode($cookie_raw), true) : null;
 
 if (!$cookie_data || $cookie_data['role'] !== 'pasien') {
-    echo json_encode(['status' => 'none', 'nomor_antrian' => '-']);
+    echo json_encode(['status' => 'none', 'nomor_antrean' => '-']);
     exit();
 }
 
@@ -22,6 +22,6 @@ $data = mysqli_fetch_assoc($query_antrian);
 if ($data) {
     echo json_encode($data);
 } else {
-    echo json_encode(['status' => 'none', 'nomor_antrian' => '-']);
+    echo json_encode(['status' => 'none', 'nomor_antrean' => '-']);
 }
 ?>

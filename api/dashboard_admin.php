@@ -31,7 +31,7 @@ $total_pasien = mysqli_fetch_assoc($q_pasien)['total'] ?? 0;
 $q_feedback = mysqli_query($koneksi, "SELECT * FROM feedback ORDER BY id DESC LIMIT 5");
 $total_feedback = mysqli_fetch_assoc($q_feedback)['total'] ?? 0;
 
-// 4. DATA UNTUK GRAFIK (Perbaikan Unknown Column nomor_antrian)
+// 4. DATA UNTUK GRAFIK (Perbaikan Unknown Column nomor_antrean)
 $labels = [];
 $data_grafik = [];
 $res = mysqli_query($koneksi, "SELECT poli, COUNT(*) as total FROM antrian WHERE DATE(created_at) = '$hari_ini' GROUP BY poli");
@@ -68,7 +68,7 @@ if(empty($labels)) { $labels = ['Belum Ada Data']; $data_grafik = [0]; }
                 <h1 class="text-3xl font-extrabold text-slate-800 tracking-tight">Panel Kendali Admin</h1>
                 <p class="text-slate-500">Selamat datang kembali, Pengelola Sistem.</p>
             </div>
-            <a href="logout.php" class="bg-red-500 hover:bg-red-600 text-white px-6 py-2.5 rounded-xl font-bold shadow-lg shadow-red-100 transition-all flex items-center">
+            <a href="/api/logout.php" class="bg-red-500 hover:bg-red-600 text-white px-6 py-2.5 rounded-xl font-bold shadow-lg shadow-red-100 transition-all flex items-center">
                 <i class="fas fa-sign-out-alt mr-2"></i> Logout
             </a>
         </header>
@@ -80,7 +80,7 @@ if(empty($labels)) { $labels = ['Belum Ada Data']; $data_grafik = [0]; }
                 </div>
                 <h2 class="text-2xl font-bold text-slate-800 mb-2">Manajemen Petugas</h2>
                 <p class="text-slate-400 text-sm mb-6 leading-relaxed">Kelola akun Dokter, Perawat, dan Staff klinik Anda di sini.</p>
-                <a href="kelola_petugas.php" class="inline-block text-emerald-500 font-bold hover:translate-x-2 transition-transform">Kelola Petugas <i class="fas fa-arrow-right ml-1"></i></a>
+                <a href="/api/kelola_petugas.php" class="inline-block text-emerald-500 font-bold hover:translate-x-2 transition-transform">Kelola Petugas <i class="fas fa-arrow-right ml-1"></i></a>
             </div>
 
             <div class="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100 hover:shadow-md transition-all">
@@ -89,7 +89,7 @@ if(empty($labels)) { $labels = ['Belum Ada Data']; $data_grafik = [0]; }
                 </div>
                 <h2 class="text-2xl font-bold text-slate-800 mb-2">Manajemen Pasien</h2>
                 <p class="text-slate-400 text-sm mb-6 leading-relaxed">Edit profil pasien atau reset akun pasien yang terdaftar.</p>
-                <a href="kelola_pasien.php" class="inline-block text-blue-500 font-bold hover:translate-x-2 transition-transform">Kelola Pasien <i class="fas fa-arrow-right ml-1"></i></a>
+                <a href="/api/kelola_pasien.php" class="inline-block text-blue-500 font-bold hover:translate-x-2 transition-transform">Kelola Pasien <i class="fas fa-arrow-right ml-1"></i></a>
             </div>
         </div>
 
@@ -103,7 +103,7 @@ if(empty($labels)) { $labels = ['Belum Ada Data']; $data_grafik = [0]; }
                     <span class="hidden md:block bg-slate-50 text-slate-400 text-[10px] font-bold px-3 py-1.5 rounded-full uppercase tracking-wider">
                         Scroll <i class="fas fa-arrow-down ml-1"></i>
                     </span>
-                    <a href="hapus_feedback.php?aksi=reset_semua" 
+                    <a href="/api/hapus_feedback.php?aksi=reset_semua" 
                        onclick="return confirm('Yakin ingin menghapus SEMUA feedback?')"
                        class="bg-red-50 text-red-600 px-5 py-2 rounded-xl text-xs font-bold border border-red-100 hover:bg-red-100 transition-all flex items-center">
                        <i class="fas fa-trash-alt mr-2"></i> RESET SEMUA
@@ -146,7 +146,7 @@ if(empty($labels)) { $labels = ['Belum Ada Data']; $data_grafik = [0]; }
                             <p class="text-[10px] text-slate-400 font-bold uppercase tracking-tighter"><?php echo date('d M Y', strtotime($f['created_at'])); ?></p>
                             <p class="text-[10px] text-slate-300 font-medium"><?php echo date('H:i', strtotime($f['created_at'])); ?> WIB</p>
                         </div>
-                        <a href="hapus_feedback.php?id=<?php echo $f['id']; ?>" 
+                        <a href="/api/hapus_feedback.php?id=<?php echo $f['id']; ?>" 
                            onclick="return confirm('Hapus feedback dari <?php echo $row['nama_pasien']; ?>?')"
                            class="w-10 h-10 flex items-center justify-center rounded-xl bg-white text-slate-300 hover:bg-red-50 hover:text-red-500 shadow-sm transition-all">
                             <i class="fas fa-trash-alt text-sm"></i>
