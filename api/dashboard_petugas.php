@@ -16,6 +16,7 @@ if (!$cookie_data || !in_array($role, $allowed_roles)) {
 }
 
 $nama_petugas = $cookie_data['nama'];
+$role_user = $cookie_data['role'] ?? 'Petugas';
 $hari_ini = date('Y-m-d'); // Variabel wajib untuk filter data hari ini
 
 // 3. AMBIL DATA STATISTIK UNTUK WIDGET

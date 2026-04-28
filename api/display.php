@@ -29,30 +29,40 @@
     </div>
 
     <script>
-        let nomorLama = "";
+        let nomorTerakhir = "";
 
-                // Tambahkan logika ini pada bagian script di display.php
-        function panggilAntrean(nomor, poli) {
+        function panggilSuara(nomor, poli) {
             const teks = `Nomor antrean ${nomor}, silakan menuju ke ${poli}`;
             const utterance = new SpeechSynthesisUtterance(teks);
-            utterance.lang = 'id-ID'; // Menggunakan suara Bahasa Indonesia
-            utterance.rate = 0.8;    // Kecepatan bicara agak lambat agar jelas
+            utterance.lang = 'id-ID';
+            utterance.rate = 0.8;
             window.speechSynthesis.speak(utterance);
         }
 
-        // Logika untuk mendeteksi perubahan status (Polling)
-        setInterval(() => {
-            fetch('ambil_antrean_terbaru.php')
+        function updateDisplay() {
+            // Ambil data antrean yang sedang 'dipanggil'
+            fetch('/api/get_antrian_sekarang.php') 
                 .then(res => res.json())
                 .then(data => {
-                    if (data.nomor_antrian !== window.nomorTerakhir) {
-                        panggilAntrean(data.nomor_antrian, data.poli);
-                        window.nomorTerakhir = data.nomor_antrian;
-                        // Update UI Display di sini
-                        document.getElementById('nomor-display').innerText = data.nomor_antrian;
+                    if (data && data.nomor_antrean) {
+                        const noBaru = data.nomor_antrean;
+                        const poliBaru = data.poli;
+
+                        // Jika nomor berubah, panggil suara
+                        if (noBaru !== nomorTerakhir) {
+                            document.getElementById('display-nomor').innerText = noBaru;
+                            document.getElementById('display-poli').innerText = poliBaru;
+                            panggilSuara(noBaru, poliBaru);
+                            nomorTerakhir = noBaru;
+                        }
                     }
-                });
-        }, 3000);
+                })
+                .catch(err => console.error("Gagal ambil data display:", err));
+        }
+
+        // Cek perubahan setiap 3 detik
+        setInterval(updateDisplay, 3000);
+        updateDisplay();
     </script>
 </body>
 </html>
