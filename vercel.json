@@ -21,7 +21,6 @@
     { "src": "/monitoring", "dest": "/api/monitoring.php" },
     { "src": "/get_antrian_sekarang", "dest": "/api/get_antrian_sekarang.php" },
     { "src": "/display", "dest": "/api/display.php" },
-
     { "src": "/(.*)", "dest": "/$1" }
   ]
 }

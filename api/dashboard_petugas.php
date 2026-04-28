@@ -155,52 +155,19 @@ if ($res && mysqli_num_rows($res) > 0) {
     </div>
 
     <script>
-        let myChart;
-
-        function updateChart() {
-            fetch('get_statistik_poli.php')
-                .then(response => response.json())
-                .then(result => {
-                    const ctx = document.getElementById('chartPoli').getContext('2d');
-                    
-                    if (myChart) { myChart.destroy(); }
-
-                    myChart = new Chart(ctx, {
-                        type: 'bar',
-                        data: {
-                            labels: result.labels,
-                            datasets: [{
-                                label: 'Jumlah Pasien',
-                                data: result.data,
-                                backgroundColor: [
-                                    'rgba(16, 185, 129, 0.7)', 
-                                    'rgba(59, 130, 246, 0.7)', 
-                                    'rgba(249, 115, 22, 0.7)', 
-                                    'rgba(139, 92, 246, 0.7)'
-                                ],
-                                borderRadius: 12,
-                                borderSkipped: false,
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                legend: { display: false }
-                            },
-                            scales: {
-                                y: { beginAtZero: true, grid: { color: '#f1f5f9' } },
-                                x: { grid: { display: false } }
-                            }
-                        }
-                    });
-                });
+       function refreshMonitoring() {
+        fetch('/monitoring') // Sesuaikan dengan rute vercel.json
+            .then(response => response.text())
+            .then(html => {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const newContent = doc.querySelector('table'); // Ambil tabelnya saja
+                if(newContent) {
+                    document.querySelector('.overflow-x-auto').innerHTML = newContent.outerHTML;
+                }
+            });
         }
-
-        // Jalankan Chart
-        updateChart();
-        // Auto update tiap 30 detik
-        setInterval(updateChart, 30000);
+        setInterval(refreshMonitoring, 5000);
     </script>
 
 </body>
