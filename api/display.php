@@ -31,7 +31,7 @@
     <script>
         let nomorTerakhir = "";
 
-        function panggilSuara(nomor, poli) {
+        function panggilAntrean(nomor, poli) {
             const teks = `Nomor antrean ${nomor}, silakan menuju ke ${poli}`;
             const utterance = new SpeechSynthesisUtterance(teks);
             utterance.lang = 'id-ID';
@@ -40,27 +40,25 @@
         }
 
         function updateDisplay() {
-            // Ambil data antrean yang sedang 'dipanggil'
-            fetch('/api/get_antrian_sekarang.php') 
+            // PANGGIL RUTE YANG ADA DI VERCEL.JSON
+            fetch('/get_antrian_sekarang') 
                 .then(res => res.json())
                 .then(data => {
-                    if (data && data.nomor_antrean) {
-                        const noBaru = data.nomor_antrean;
-                        const poliBaru = data.poli;
-
-                        // Jika nomor berubah, panggil suara
-                        if (noBaru !== nomorTerakhir) {
-                            document.getElementById('display-nomor').innerText = noBaru;
-                            document.getElementById('display-poli').innerText = poliBaru;
-                            panggilSuara(noBaru, poliBaru);
-                            nomorTerakhir = noBaru;
-                        }
+                    if (data.nomor_antrean !== "--" && data.nomor_antrean !== nomorTerakhir) {
+                        // Update Angka di Layar
+                        document.getElementById('display-nomor').innerText = data.nomor_antrean;
+                        document.getElementById('display-poli').innerText = data.poli;
+                        
+                        // Teriakkan Suara
+                        panggilAntrean(data.nomor_antrean, data.poli);
+                        
+                        nomorTerakhir = data.nomor_antrean;
                     }
                 })
-                .catch(err => console.error("Gagal ambil data display:", err));
+                .catch(err => console.error("Error display:", err));
         }
 
-        // Cek perubahan setiap 3 detik
+        // Cek data setiap 3 detik
         setInterval(updateDisplay, 3000);
         updateDisplay();
     </script>
