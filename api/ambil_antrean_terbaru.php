@@ -23,7 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['poli'])) {
     }
 
     // 3. Cari nomor antrean terakhir hari ini di poli tersebut
-    $cek_nomor = mysqli_query($koneksi, "SELECT MAX(CAST(SUBSTRING(nomor_antrian, 3) AS UNSIGNED)) as max_no FROM antrian WHERE poli='$poli' AND DATE(created_at)='$tanggal'");
+    $cek_nomor = mysqli_query($koneksi, "SELECT MAX(CAST(SUBSTRING(nomor_antrean, 3) AS UNSIGNED)) as max_no FROM antrian WHERE poli='$poli' AND DATE(created_at)='$tanggal'");
     $data = mysqli_fetch_assoc($cek_nomor);
     $next_no = ($data['max_no'] ?? 0) + 1;
     
@@ -32,7 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['poli'])) {
     $nomor_antrian = $kode_poli . "-" . str_pad($next_no, 3, "0", STR_PAD_LEFT);
 
     // 4. Insert ke Database
-    $query_insert = "INSERT INTO antrian (id_pasien, nomor_antrian, poli, status, created_at) 
+    $query_insert = "INSERT INTO antrian (id_pasien, nomor_antrean, poli, status, created_at) 
                      VALUES ('$id_pasien', '$nomor_antrian', '$poli', 'menunggu', NOW())";
     
     if (mysqli_query($koneksi, $query_insert)) {
