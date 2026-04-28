@@ -1,35 +1,29 @@
 {
   "functions": {
-    "api/*/.php": {
-      "runtime": "vercel-php@0.9.0"
+    "api/*.php": {
+      "runtime": "vercel-php@0.7.2"
     }
   },
   "routes": [
     { "src": "/login", "dest": "/api/login.php" },
     { "src": "/register", "dest": "/api/register.php" },
-    { "src": "/proses_register", "dest": "/api/proses_register.php" },
     { "src": "/cek_login", "dest": "/api/cek_login.php" },
     { "src": "/dashboard_admin", "dest": "/api/dashboard_admin.php" },
     { "src": "/dashboard_petugas", "dest": "/api/dashboard_petugas.php" },
     { "src": "/dashboard_pasien", "dest": "/api/dashboard_pasien.php" },
-    { "src": "/logout", "dest": "/api/logout.php" },
     { "src": "/monitoring", "dest": "/api/monitoring.php" },
     { "src": "/display", "dest": "/api/display.php" },
     { "src": "/kelola_pasien", "dest": "/api/kelola_pasien.php" },
     { "src": "/kelola_petugas", "dest": "/api/kelola_petugas.php" },
-    { "src": "/tambah_antrian_terbaru", "dest": "/api/ambil_antrean_terbaru.php" },
     { "src": "/get_antrian_sekarang", "dest": "/api/get_antrian_sekarang.php" },
-    { "src": "/cek_status_antrean", "dest": "/api/cek_status_antrean.php" },
-    { "src": "/hapus_feedback", "dest": "/api/hapus_feedback.php" },
-    { "src": "/hapus_user", "dest": "/api/hapus_user.php" },
+    { "src": "/logout", "dest": "/api/logout.php" },
     
     { "src": "/css/(.*)", "dest": "/css/$1" },
     { "src": "/js/(.*)", "dest": "/js/$1" },
-    { "src": "/assets/(.*)", "dest": "/assets/$1" },
     { "src": "/dist/(.*)", "dest": "/dist/$1" },
     { "src": "/plugins/(.*)", "dest": "/plugins/$1" },
 
-    { "src": "/api/(.*).php", "dest": "/api/$1.php" },
+    { "src": "/api/(.*)", "dest": "/api/$1" },
     { "src": "/(.*)", "dest": "/$1" }
   ]
 }
