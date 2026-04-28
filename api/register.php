@@ -11,7 +11,18 @@
     </style>
 </head>
 <body class="p-4">
-
+ 
+<?php
+// ✅ Tampilkan pesan error/sukses dari redirect proses_register
+$error = $_GET['error'] ?? '';
+$pesan_error = match($error) {
+    'email_exists'  => 'Email sudah terdaftar. Gunakan email lain.',
+    'data_kosong'   => 'Nama dan email tidak boleh kosong.',
+    'gagal_simpan'  => 'Gagal menyimpan data. Coba lagi.',
+    default         => ''
+};
+?>
+ 
 <div class="w-full max-w-md">
     <div class="bg-white rounded-[2rem] shadow-2xl p-8">
         <div class="text-center mb-6">
@@ -21,8 +32,14 @@
             <h2 class="text-2xl font-extrabold text-slate-800">Daftar Akun</h2>
             <p class="text-slate-400 text-sm mt-1">Lengkapi data untuk akses sistem</p>
         </div>
-
-        <form action="/proses_register" method="POST">
+ 
+        <?php if ($pesan_error): ?>
+        <div class="bg-red-50 border border-red-200 text-red-600 text-sm rounded-xl px-4 py-3 mb-4">
+            <i class="fas fa-exclamation-circle mr-2"></i><?= htmlspecialchars($pesan_error) ?>
+        </div>
+        <?php endif; ?>
+ 
+        <form action="/proses_register" method="POST" class="space-y-4">
             <div>
                 <label class="block text-sm font-semibold text-slate-700 mb-1">Nama Lengkap</label>
                 <input type="text" name="nama" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-emerald-400 outline-none transition-all" placeholder="Nama sesuai identitas" required>
@@ -47,12 +64,12 @@
                 DAFTAR SEKARANG
             </button>
         </form>
-
+ 
         <p class="text-center text-sm text-slate-400 mt-6">
             Sudah punya akun? <a href="/login" class="text-emerald-600 font-bold hover:underline">Masuk</a>
         </p>
     </div>
 </div>
-
+ 
 </body>
 </html>
