@@ -31,10 +31,10 @@ if (mysqli_num_rows($cek_email) > 0) {
 // Dulu: $sql = "INSERT ..." tapi tidak ada mysqli_query()
 // Sekarang: langsung jalankan query-nya
 if ($role === 'pasien') {
-    // Pasien disimpan ke tabel pasien
+    // ✅ Tabel pasien tidak punya kolom role — tidak dimasukkan
     $query_simpan = mysqli_query($koneksi,
-        "INSERT INTO pasien (email, nama_pasien, password, role) 
-         VALUES ('$email', '$nama', '$password', '$role')"
+        "INSERT INTO pasien (email, nama_pasien, password) 
+         VALUES ('$email', '$nama', '$password')"
     );
 } else {
     // Staff/admin disimpan ke tabel petugas
