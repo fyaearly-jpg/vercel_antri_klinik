@@ -1,47 +1,67 @@
 <?php
-// api/ambil_antrean_terbaru.php
+header("Content-Type: application/json");
 include 'koneksi.php';
 
-// 1. Ambil data dari Cookie
-$cookie_raw = $_COOKIE['user_session'] ?? null;
-$cookie_data = $cookie_raw ? json_decode(base64_decode($cookie_raw), true) : null;
-
-if (!$cookie_data) {
-    header("Location: /login");
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    echo json_encode(["success" => false, "message" => "Method tidak valid"]);
     exit();
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $poli = mysqli_real_escape_string($koneksi, $_POST['poli'] ?? 'Umum');
-    $id_pasien = $cookie_data['id']; 
-    $tanggal = date('Y-m-d');
+$poli      = mysqli_real_escape_string($koneksi, trim($_POST['poli'] ?? ''));
+$id_pasien = mysqli_real_escape_string($koneksi, trim($_POST['id_pasien'] ?? ''));
+$tanggal   = date('Y-m-d');
 
-    // 2. Cari nomor terakhir
-    $query_max = "SELECT MAX(CAST(SUBSTRING(nomor_antrean, 3) AS UNSIGNED)) as max_no 
-                  FROM antrian
-                  WHERE poli = '$poli' AND DATE(created_at) = '$tanggal'";
-    
-    $res_max = mysqli_query($koneksi, $query_max);
-    $row = mysqli_fetch_assoc($res_max);
-    $next_no = (int)($row['max_no'] ?? 0) + 1;
+if (empty($poli) || empty($id_pasien)) {
+    echo json_encode(["success" => false, "message" => "Data tidak lengkap"]);
+    exit();
+}
 
-    // 3. Buat nomor baru (Contoh: U-1)
-    $kode_poli = strtoupper(substr($poli, 0, 1));
-    $nomor_baru = $kode_poli . "-" . $next_no;
+// Cek sudah punya antrean hari ini
+$cek = mysqli_query($koneksi, 
+    "SELECT nomor_antrean, poli, status FROM antrian 
+     WHERE id_pasien='$id_pasien' AND DATE(created_at)='$tanggal' LIMIT 1"
+);
+if (mysqli_num_rows($cek) > 0) {
+    $ex = mysqli_fetch_assoc($cek);
+    echo json_encode([
+        "success"  => true,
+        "nomor"    => $ex['nomor_antrean'],
+        "poli"     => $ex['poli'],
+        "existed"  => true,
+        "message"  => "Anda sudah punya antrean hari ini"
+    ]);
+    exit();
+}
 
-    // 4. INSERT KE DATABASE
-    // Pastikan nama kolom 'nomor_antrean' sesuai dengan database kamu
-    $sql = "INSERT INTO antrian (id_pasien, nomor_antrean, poli, status, created_at) 
-            VALUES ('$id_pasien', '$nomor_baru', '$poli', 'menunggu', NOW())";
+// Hitung nomor urut per poli hari ini
+// Contoh: Poli Umum → U-1, U-2, dst
+// Poli Gigi → G-1, G-2, dst
+$kode_poli = strtoupper(substr(trim($poli), 0, 1));
 
-    if (mysqli_query($koneksi, $sql)) {
-        header("Location: /dashboard_pasien?status=sukses");
-        exit();
-    } else {
-        die("Gagal Simpan: " . mysqli_error($koneksi));
-    }
+$q_max = mysqli_query($koneksi,
+    "SELECT COUNT(*) as total FROM antrian 
+     WHERE poli='$poli' AND DATE(created_at)='$tanggal'"
+);
+$row_max  = mysqli_fetch_assoc($q_max);
+$next_no  = (int)($row_max['total'] ?? 0) + 1;
+$nomor_baru = $kode_poli . "-" . $next_no;
 
+// Insert ke database
+// Kolom waktu_daftar diisi NOW() karena ada di tabel
+$sql = "INSERT INTO antrian (id_pasien, nomor_antrean, poli, status, waktu_daftar, created_at) 
+        VALUES ('$id_pasien', '$nomor_baru', '$poli', 'menunggu', NOW(), NOW())";
+
+if (mysqli_query($koneksi, $sql)) {
+    echo json_encode([
+        "success" => true,
+        "nomor"   => $nomor_baru,
+        "poli"    => $poli,
+        "existed" => false
+    ]);
 } else {
-    header("Location: /dashboard_pasien");
-    exit();
+    echo json_encode([
+        "success" => false,
+        "message" => "Gagal simpan: " . mysqli_error($koneksi)
+    ]);
 }
+?>
