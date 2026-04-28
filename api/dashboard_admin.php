@@ -1,7 +1,9 @@
 <?php
 // api/dashboard_admin.php
 include 'koneksi.php';
-
+if (!$koneksi) {
+    die("Koneksi gagal: " . mysqli_connect_error());
+}
 // 1. Ambil data dari Cookie (Sesuai dengan cek_login.php)
 $cookie_raw = $_COOKIE['user_session'] ?? null;
 $cookie_data = $cookie_raw ? json_decode(base64_decode($cookie_raw), true) : null;
@@ -26,7 +28,7 @@ $q_pasien = mysqli_query($koneksi, "SELECT COUNT(*) as total FROM pasien");
 $total_pasien = mysqli_fetch_assoc($q_pasien)['total'] ?? 0;
 
 // Feedback Terbaru (Sinkron dengan simpan_feedback.php)
-$q_feedback = mysqli_query($koneksi, "SELECT COUNT(*) as total FROM feedback");
+$q_feedback = mysqli_query($koneksi, "SELECT * FROM feedback ORDER BY id DESC LIMIT 5");
 $total_feedback = mysqli_fetch_assoc($q_feedback)['total'] ?? 0;
 
 // 4. DATA UNTUK GRAFIK (Perbaikan Unknown Column nomor_antrian)

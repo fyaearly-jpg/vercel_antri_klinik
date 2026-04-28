@@ -18,10 +18,12 @@
     { "src": "/kelola_pasien", "dest": "/api/kelola_pasien.php" },
     { "src": "/kelola_petugas", "dest": "/api/kelola_petugas.php" },
     { "src": "/tambah_antrian_terbaru", "dest": "/api/ambil_antrean_terbaru.php" },
-    { "src": "/monitoring", "dest": "/api/monitoring.php" },
     { "src": "/get_antrian_sekarang", "dest": "/api/get_antrian_sekarang.php" },
     { "src": "/display", "dest": "/api/display.php" },
-
+    { "src": "/kelola_pasien", "dest": "/api/kelola_pasien.php" },
+    { "src": "/kelola_petugas", "dest": "/api/kelola_petugas.php" },
+    { "src": "/hapus_feedback", "dest": "/api/hapus_feedback.php" },
+    { "src": "/hapus_user", "dest": "/api/hapus_user.php" },
     { "src": "/(.*)", "dest": "/$1" }
   ]
 }
