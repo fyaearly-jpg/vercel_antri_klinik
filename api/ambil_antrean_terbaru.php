@@ -18,7 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // 2. Cari nomor terakhir
     $query_max = "SELECT MAX(CAST(SUBSTRING(nomor_antrean, 3) AS UNSIGNED)) as max_no 
-                  FROM antrean 
+                  FROM antrian
                   WHERE poli = '$poli' AND DATE(created_at) = '$tanggal'";
     
     $res_max = mysqli_query($koneksi, $query_max);
