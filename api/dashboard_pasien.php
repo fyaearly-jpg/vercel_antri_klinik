@@ -299,40 +299,68 @@ setInterval(cekStatus, 5000);
 // =====================
 // MODAL BPS
 // =====================
+let bpsLoaded = false;
+
 async function openBpsModal() {
     document.getElementById('bpsModal').classList.remove('hidden');
-    document.getElementById('bps-content').innerHTML = '<i class="fas fa-spinner fa-spin text-2xl text-emerald-500"></i>';
- 
+    document.body.style.overflow = 'hidden';
+    if (bpsLoaded) return;
+
+    document.getElementById('bps-content').innerHTML = `
+        <div class="flex flex-col items-center py-10 text-slate-400">
+            <i class="fas fa-circle-notch fa-spin text-3xl text-emerald-400 mb-3"></i>
+            <p class="text-sm font-bold">Memuat data dari BPS...</p>
+        </div>`;
+
     try {
+        // ✅ Fetch ke proxy PHP di server kita sendiri (tidak kena blokir CORS)
         const res  = await fetch('/api/get_bps.php');
-        const list = await res.json();
-        if (!list.length) throw new Error();
- 
-        let html = `<table class="w-full text-left text-sm">
+        const json = await res.json();
+
+        if (!json.success || !json.data.length) throw new Error('Data kosong');
+
+        let html = `<table class="w-full text-left text-sm border-separate border-spacing-y-1">
             <thead><tr class="bg-slate-800 text-white">
-                <th class="p-3 rounded-l-xl">No</th>
+                <th class="p-3 rounded-l-xl text-center w-12">No</th>
                 <th class="p-3">Provinsi</th>
-                <th class="p-3 rounded-r-xl text-center">Nilai</th>
+                <th class="p-3 rounded-r-xl text-center">Persentase</th>
             </tr></thead><tbody>`;
-        list.forEach((r, i) => {
-            html += `<tr class="border-b border-slate-50 hover:bg-emerald-50">
-                <td class="p-3 text-slate-400 font-bold">${i+1}</td>
+
+        json.data.forEach((r, i) => {
+            html += `<tr class="hover:bg-emerald-50 transition-all">
+                <td class="p-3 text-slate-400 font-bold text-center rounded-l-xl">${i + 1}</td>
                 <td class="p-3 font-bold text-slate-700">${r.provinsi}</td>
-                <td class="p-3 text-center">
+                <td class="p-3 text-center rounded-r-xl">
                     <span class="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-lg font-bold text-xs">${r.nilai}%</span>
                 </td>
             </tr>`;
         });
+
         html += '</tbody></table>';
         document.getElementById('bps-content').innerHTML = html;
+        bpsLoaded = true;
+
     } catch (e) {
-        document.getElementById('bps-content').innerHTML = '<p class="text-slate-400 italic">Gagal memuat data BPS.</p>';
+        document.getElementById('bps-content').innerHTML = `
+            <div class="flex flex-col items-center py-10 text-slate-400">
+                <i class="fas fa-exclamation-triangle text-3xl text-amber-400 mb-3"></i>
+                <p class="text-sm font-bold mb-3">Gagal memuat data BPS.</p>
+                <button onclick="bpsLoaded=false; openBpsModal()"
+                    class="bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold px-5 py-2 rounded-xl transition-all">
+                    <i class="fas fa-redo mr-1"></i> Coba Lagi
+                </button>
+            </div>`;
     }
 }
- 
+
 function closeBpsModal() {
     document.getElementById('bpsModal').classList.add('hidden');
+    document.body.style.overflow = '';
 }
+
+document.getElementById('bpsModal').addEventListener('click', function(e) {
+    if (e.target === this) closeBpsModal();
+});
 </script>
  
 </body>
