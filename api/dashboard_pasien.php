@@ -8,14 +8,16 @@ if (!$cookie_data || $cookie_data['role'] !== 'pasien') {
     exit();
 }
  
-error_reporting(E_ALL);
-$id_user   = $cookie_data['id'] ?? 'KOSONG';
-$nama_user = $cookie_data['nama'] ?? 'KOSONG';
+$id_user   = $cookie_data['id']; // Pastikan ini adalah ID angka dari tabel pasien
+$nama_user = $cookie_data['nama'];
 $tanggal   = date('Y-m-d');
  
-$query        = mysqli_query($koneksi, "SELECT * FROM antrian WHERE id_pasien='$id_user' AND DATE(created_at)='$tanggal' ORDER BY id DESC LIMIT 1");
+// FIX: Gunakan variabel $id_user yang benar dan pastikan status bukan 'selesai'
+$query = mysqli_query($koneksi, "SELECT * FROM antrian WHERE id_pasien='$id_user' AND DATE(created_at)='$tanggal' AND status != 'selesai' ORDER BY id DESC LIMIT 1");
 $data_antrian = mysqli_fetch_assoc($query);
-$punya_antrean_aktif = ($data_antrian && $data_antrian['status'] !== 'selesai');
+
+// Logika penentu halaman
+$punya_antrean_aktif = ($data_antrian) ? true : false;
 ?>
 <!DOCTYPE html>
 <html lang="id">
