@@ -3,7 +3,7 @@
 header("Content-Type: application/json");
 include "koneksi.php";
 
-// Set waktu Indonesia
+// Gunakan zona waktu Indonesia
 date_default_timezone_set('Asia/Jakarta');
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -12,17 +12,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $saran    = mysqli_real_escape_string($koneksi, $_POST['saran'] ?? '');
     $waktu    = date('Y-m-d H:i:s');
     
-    // Simpan ke database jika tingkat kepuasan diisi
     if (!empty($kepuasan)) {
-        $query = mysqli_query($koneksi, "INSERT INTO feedback (nama_pasien, kepuasan, saran, created_at) VALUES ('$nama', '$kepuasan', '$saran', '$waktu')");
+        $sql = "INSERT INTO feedback (nama_pasien, kepuasan, saran, created_at) 
+                VALUES ('$nama', '$kepuasan', '$saran', '$waktu')";
+        $query = mysqli_query($koneksi, $sql);
         
         if ($query) {
-            echo json_encode(["success" => true, "message" => "Feedback tersimpan"]);
+            echo json_encode(["success" => true]);
         } else {
-            echo json_encode(["success" => false, "message" => "Gagal simpan ke DB"]);
+            echo json_encode(["success" => false, "message" => mysqli_error($koneksi)]);
         }
     } else {
-        echo json_encode(["success" => false, "message" => "Data tidak lengkap"]);
+        echo json_encode(["success" => false, "message" => "Tingkat kepuasan kosong"]);
     }
     exit();
 }

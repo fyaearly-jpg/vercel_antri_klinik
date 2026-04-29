@@ -2,15 +2,11 @@
 // api/dashboard_admin.php
 include 'koneksi.php';
 
-if (!$koneksi) {
-    die("Koneksi gagal: " . mysqli_connect_error());
-}
-
 // 1. Ambil data dari Cookie
 $cookie_raw = $_COOKIE['user_session'] ?? null;
 $cookie_data = $cookie_raw ? json_decode(base64_decode($cookie_raw), true) : null;
 
-// 2. Proteksi: Wajib Admin
+// 2. Proteksi Admin
 $role = isset($cookie_data['role']) ? strtolower(trim($cookie_data['role'])) : '';
 if (!$cookie_data || $role !== 'admin') {
     header("Location: /login");
@@ -20,34 +16,19 @@ if (!$cookie_data || $role !== 'admin') {
 $nama_admin = $cookie_data['nama'];
 $hari_ini = date('Y-m-d');
 
-// 3. FITUR STATISTIK
-// Total Antrean Hari Ini
+// 3. Statistik (Tetap biarkan seperti ini)
 $q_total = mysqli_query($koneksi, "SELECT COUNT(*) as total FROM antrian WHERE DATE(created_at) = '$hari_ini'");
 $total_antrean = mysqli_fetch_assoc($q_total)['total'] ?? 0;
 
-// Total Pasien Terdaftar
 $q_pasien = mysqli_query($koneksi, "SELECT COUNT(*) as total FROM pasien");
 $total_pasien = mysqli_fetch_assoc($q_pasien)['total'] ?? 0;
 
-// Feedback Terbaru
+// AMBIL DATA FEEDBACK (Cukup simpan di variabel, jangan di-loop di sini)
 $q_feedback = mysqli_query($koneksi, "SELECT * FROM feedback ORDER BY id DESC LIMIT 5");
-$total_feedback_res = mysqli_query($koneksi, "SELECT COUNT(*) as total FROM feedback");
-$total_feedback = mysqli_fetch_assoc($total_feedback_res)['total'] ?? 0;
+$total_f_res = mysqli_query($koneksi, "SELECT COUNT(*) as total FROM feedback");
+$total_feedback = mysqli_fetch_assoc($total_f_res)['total'] ?? 0;
 
-// 4. DATA UNTUK GRAFIK
-$labels = [];
-$data_grafik = [];
-$res_grafik = mysqli_query($koneksi, "SELECT poli, COUNT(*) as total FROM antrian WHERE DATE(created_at) = '$hari_ini' GROUP BY poli");
-
-while($row_g = mysqli_fetch_assoc($res_grafik)) {
-    $labels[] = $row_g['poli'];
-    $data_grafik[] = (int)$row_g['total'];
-}
-
-if(empty($labels)) { 
-    $labels = ['Belum Ada Data']; 
-    $data_grafik = [0]; 
-}
+// [LANJUTKAN KE KODE HTML DI BAWAHNYA...]
 ?>
 <!DOCTYPE html>
 <html lang="id">

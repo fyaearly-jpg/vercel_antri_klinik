@@ -246,18 +246,25 @@ function tutupModal() { document.getElementById('modal-feedback').classList.repl
 
 async function kirimFeedback() {
     const btn = document.getElementById('btn-kirim');
-    btn.disabled    = true;
+    btn.disabled = true;
     btn.textContent = 'Mengirim...';
 
     const fd = new FormData();
-    // Pastikan nama variabel 'nama_pasien', 'kepuasan', dan 'saran' sesuai dengan simpan_feedback.php
     fd.append('nama_pasien', '<?php echo addslashes($nama_user); ?>');
-    fd.append('kepuasan',    document.getElementById('kepuasan').value);
-    fd.append('saran',       document.getElementById('saran').value);
+    fd.append('kepuasan', document.getElementById('kepuasan').value);
+    fd.append('saran', document.getElementById('saran').value);
 
-    // Ganti /api/kirim_feedback.php menjadi /api/simpan_feedback.php
-    await fetch('/api/simpan_feedback.php', { method: 'POST', body: fd });
-    window.location.href = '/logout'; // Redirect ke logout setelah selesai
+    try {
+        // Kirim data ke rute simpan_feedback
+        await fetch('/simpan_feedback', { method: 'POST', body: fd });
+        
+        // Setelah sukses simpan, baru arahkan ke logout
+        window.location.href = '/logout';
+    } catch (e) {
+        alert("Gagal mengirim feedback, silakan coba lagi.");
+        btn.disabled = false;
+        btn.textContent = 'Kirim';
+    }
 }
  
 // =====================
