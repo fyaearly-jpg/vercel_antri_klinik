@@ -1,22 +1,33 @@
 <?php
 include 'koneksi.php';
- 
-$cookie_data = isset($_COOKIE['user_session']) ? json_decode(base64_decode($_COOKIE['user_session']), true) : null;
- 
-if (!$cookie_data || $cookie_data['role'] !== 'pasien') {
+
+$cookie_raw = $_COOKIE['user_session'] ?? null;
+$cookie_data = $cookie_raw ? json_decode(base64_decode($cookie_raw), true) : null;
+
+if (!$cookie_data) {
     header("Location: /login");
     exit();
 }
- 
-$id_user   = $cookie_data['id']; // Pastikan ini adalah ID angka dari tabel pasien
-$nama_user = $cookie_data['nama'];
-$tanggal   = date('Y-m-d');
- 
-// FIX: Gunakan variabel $id_user yang benar dan pastikan status bukan 'selesai'
-$query = mysqli_query($koneksi, "SELECT * FROM antrian WHERE id_pasien='$id_user' AND DATE(created_at)='$tanggal' AND status != 'selesai' ORDER BY id DESC LIMIT 1");
+
+// AMBIL ID DARI COOKIE
+$id_user = $cookie_data['id']; 
+$tanggal = date('Y-m-d');
+
+// QUERY PENCARIAN TIKET AKTIF
+// Gunakan status != 'selesai' agar jika sudah pulang, halaman balik ke pilih poli
+$sql = "SELECT * FROM antrian 
+        WHERE id_pasien = '$id_user' 
+        AND DATE(created_at) = '$tanggal' 
+        AND status != 'selesai' 
+        ORDER BY id DESC LIMIT 1";
+
+$query = mysqli_query($koneksi, $sql);
 $data_antrian = mysqli_fetch_assoc($query);
 
-// Logika penentu halaman
+echo "ID di Cookie: " . $id_user . "<br>";
+echo "Jumlah data ketemu: " . mysqli_num_rows($query) . "<br>";
+if(!$data_antrian) { echo "Sistem tidak menemukan tiket aktif untuk ID ini hari ini."; }
+
 $punya_antrean_aktif = ($data_antrian) ? true : false;
 ?>
 <!DOCTYPE html>

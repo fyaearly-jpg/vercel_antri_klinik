@@ -82,8 +82,11 @@ if (!$stmt) {
     exit();
 }
 
-// "sss" -> semua string karena id_pasien dari cookie bertipe string
-$stmt->bind_param("sss", $id_pasien, $nomor_baru, $poli);
+// Pastikan $id_pasien adalah angka murni dari cookie
+$id_pasien = (int)$cookie_data['id']; 
+
+// "iss" -> i=integer (id), s=string (nomor), s=string (poli)
+$stmt->bind_param("iss", $id_pasien, $nomor_baru, $poli);
 
 if ($stmt->execute()) {
     echo json_encode([
