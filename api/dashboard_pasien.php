@@ -196,27 +196,40 @@ async function ambilAntrean() {
     fd.append('poli', poli);
 
     try {
-        // GUNAKAN RUTE CLEAN URL (tanpa .php) sesuai vercel.json
-        const res = await fetch('/tambah_antrian_terbaru', { 
-            method: 'POST', 
-            body: fd 
+        const res = await fetch('/tambah_antrian_terbaru', {
+            method: 'POST',
+            body: fd
         });
+
+        // ✅ FIX: Cek apakah response benar-benar JSON sebelum parse
+        const contentType = res.headers.get('content-type') || '';
+        if (!contentType.includes('application/json')) {
+            throw new Error('Response bukan JSON — kemungkinan sesi habis');
+        }
 
         const data = await res.json();
 
         if (data.success) {
-            // Berhasil: Refresh untuk memunculkan tiket
-            window.location.href = '/dashboard_pasien'; 
+            // ✅ FIX: Tampilkan nomor dulu sebelum redirect, beri waktu DB commit
+            btn.textContent = `✓ Antrean ${data.nomor} berhasil!`;
+            btn.classList.replace('bg-emerald-600', 'bg-blue-500');
+            setTimeout(() => {
+                window.location.href = '/dashboard_pasien';
+            }, 800); // Delay 800ms agar DB selesai commit sebelum reload
+        } else if (data.message && data.message.includes('sesi')) {
+            window.location.href = '/login?pesan=sesi_habis';
         } else {
-            // GAGAL: Tampilkan pesan, jangan melempar/refresh!
-            alertEl.textContent = data.message;
+            alertEl.textContent = data.message || 'Terjadi kesalahan, coba lagi.';
             alertEl.classList.remove('hidden');
             btn.disabled = false;
             btn.textContent = 'Ambil Nomor Antrean';
         }
     } catch (e) {
-        // Jika dilempar ke login oleh server (CORS/Auth error), arahkan manual
-        window.location.href = '/login?pesan=sesi_habis';
+        console.error('ambilAntrean error:', e);
+        alertEl.textContent = 'Koneksi bermasalah, coba lagi.';
+        alertEl.classList.remove('hidden');
+        btn.disabled = false;
+        btn.textContent = 'Ambil Nomor Antrean';
     }
 }
  
