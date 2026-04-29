@@ -30,26 +30,18 @@
         </div>
 
         <?php 
-        if (isset($_GET['pesan']) || isset($_GET['error'])): 
-            $pesan = $_GET['pesan'] ?? '';
-            $is_error = isset($_GET['error']) || ($pesan !== 'belum_aktif' && $pesan !== 'menunggu_verifikasi');
-            
-            $bg_color = $is_error ? 'bg-red-50' : 'bg-orange-50';
-            $border_color = $is_error ? 'border-red-100' : 'border-orange-100';
-            $text_color = $is_error ? 'text-red-600' : 'text-orange-600';
-        ?>
-        <div class="mb-6 p-4 rounded-2xl border <?php echo "$bg_color $border_color $text_color"; ?> text-sm text-center font-bold animate-pulse">
-            <i class="fas <?php echo $is_error ? 'fa-exclamation-circle' : 'fa-clock'; ?> mr-2"></i>
-            <?php 
-                if ($pesan == 'belum_aktif') {
-                    echo "Akun Anda sedang menunggu verifikasi Admin.";
-                } elseif ($pesan == 'menunggu_verifikasi') {
-                    echo "Pendaftaran berhasil! Hubungi Admin untuk aktivasi.";
-                } else {
-                    echo "Email atau Password salah. Silakan coba lagi.";
-                }
-            ?>
-        </div>
+        <?php if (isset($_GET['pesan'])): ?>
+            <div class="mb-4 p-3 rounded-xl text-sm font-bold <?php 
+                echo ($_GET['pesan'] == 'sukses_daftar') ? 'bg-emerald-100 text-emerald-600' : 
+                    (($_GET['pesan'] == 'belum_aktif' || $_GET['pesan'] == 'menunggu_verifikasi') ? 'bg-orange-100 text-orange-600' : 'bg-red-100 text-red-600'); 
+            ?>">
+                <?php 
+                    if ($_GET['pesan'] == 'sukses_daftar') echo "Pendaftaran berhasil! Silakan masuk.";
+                    elseif ($_GET['pesan'] == 'belum_aktif') echo "Akun Anda sedang menunggu verifikasi Admin.";
+                    elseif ($_GET['pesan'] == 'menunggu_verifikasi') echo "Pendaftaran petugas berhasil! Tunggu verifikasi Admin.";
+                    else echo "Email atau Password salah.";
+                ?>
+            </div>
         <?php endif; ?>
 
         <form action="/cek_login" method="POST" class="space-y-5">
