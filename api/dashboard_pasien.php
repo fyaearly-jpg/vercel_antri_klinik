@@ -178,52 +178,47 @@ $punya_antrean_aktif = ($data_antrian && $data_antrian['status'] !== 'selesai');
 // AMBIL ANTREAN
 // =====================
 async function ambilAntrean() {
-    const poli     = document.getElementById('poli').value;
-    const alertEl  = document.getElementById('alert-antrean');
-    const btn      = document.getElementById('btn-ambil');
- 
+    const poli = document.getElementById('poli').value;
+    const alertEl = document.getElementById('alert-antrean');
+    const btn = document.getElementById('btn-ambil');
+
     if (!poli) {
         alertEl.textContent = 'Pilih poli terlebih dahulu!';
         alertEl.classList.remove('hidden');
         return;
     }
- 
+
     alertEl.classList.add('hidden');
-    btn.disabled    = true;
+    btn.disabled = true;
     btn.textContent = 'Memproses...';
- 
+
     const fd = new FormData();
-    fd.append('poli',      poli);
-    fd.append('id_pasien', '<?php echo $id_user; ?>');
- 
+    fd.append('poli', poli);
+    // Tidak perlu kirim id_pasien via FormData karena PHP sudah ambil dari Cookie
+
     try {
-        const res = await fetch('/tambah_antrian_terbaru', { method: 'POST', body: fd });
- 
-        // Cek apakah response valid JSON
-        const text = await res.text();
-        let data;
-        try {
-            data = JSON.parse(text);
-        } catch(e) {
-            alertEl.textContent = 'Error server: ' + text.substring(0, 100);
-            alertEl.classList.remove('hidden');
-            btn.disabled    = false;
-            btn.textContent = 'Ambil Nomor Antrean';
-            return;
-        }
- 
+        // Gunakan rute sesuai vercel.json
+        const res = await fetch('/tambah_antrian_terbaru', { 
+            method: 'POST', 
+            body: fd 
+        });
+
+        const data = await res.json();
+
         if (data.success) {
+            // Berhasil: Refresh untuk memunculkan tiket
             location.reload();
         } else {
-            alertEl.textContent = data.message || 'Gagal mengambil antrean.';
+            // Gagal: Tampilkan pesan error, JANGAN reload
+            alertEl.textContent = data.message;
             alertEl.classList.remove('hidden');
-            btn.disabled    = false;
+            btn.disabled = false;
             btn.textContent = 'Ambil Nomor Antrean';
         }
     } catch (e) {
-        alertEl.textContent = 'Gagal koneksi ke server. Pastikan file api/ambil_antrean_terbaru.php ada.';
+        alertEl.textContent = 'Terjadi kesalahan koneksi ke server.';
         alertEl.classList.remove('hidden');
-        btn.disabled    = false;
+        btn.disabled = false;
         btn.textContent = 'Ambil Nomor Antrean';
     }
 }

@@ -14,10 +14,10 @@ $poli      = trim($_POST['poli'] ?? '');
 $id_pasien = $cookie_data['id']; // Langsung ambil dari cookie agar lebih aman
 $tanggal   = date('Y-m-d');
 
-if (empty($poli) || empty($id_pasien)) {
+if (empty($poli)) { // Cukup cek poli saja
     echo json_encode([
         "success" => false,
-        "message" => "Data tidak lengkap"
+        "message" => "Poli belum dipilih"
     ]);
     exit();
 }
