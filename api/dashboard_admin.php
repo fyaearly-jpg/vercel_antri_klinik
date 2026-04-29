@@ -1,14 +1,16 @@
 <?php
 // api/dashboard_admin.php
 include 'koneksi.php';
+
 if (!$koneksi) {
     die("Koneksi gagal: " . mysqli_connect_error());
 }
-// 1. Ambil data dari Cookie (Sesuai dengan cek_login.php)
+
+// 1. Ambil data dari Cookie
 $cookie_raw = $_COOKIE['user_session'] ?? null;
 $cookie_data = $cookie_raw ? json_decode(base64_decode($cookie_raw), true) : null;
 
-// 2. Proteksi: Wajib Admin (Mencegah terpental jika role benar)
+// 2. Proteksi: Wajib Admin
 $role = isset($cookie_data['role']) ? strtolower(trim($cookie_data['role'])) : '';
 if (!$cookie_data || $role !== 'admin') {
     header("Location: /login");
@@ -18,30 +20,34 @@ if (!$cookie_data || $role !== 'admin') {
 $nama_admin = $cookie_data['nama'];
 $hari_ini = date('Y-m-d');
 
-// 3. FITUR STATISTIK (Sinkron dengan data asli)
+// 3. FITUR STATISTIK
 // Total Antrean Hari Ini
 $q_total = mysqli_query($koneksi, "SELECT COUNT(*) as total FROM antrian WHERE DATE(created_at) = '$hari_ini'");
 $total_antrean = mysqli_fetch_assoc($q_total)['total'] ?? 0;
 
-// Total Pasien Terdaftar (Sinkron dengan tabel pasien)
+// Total Pasien Terdaftar
 $q_pasien = mysqli_query($koneksi, "SELECT COUNT(*) as total FROM pasien");
 $total_pasien = mysqli_fetch_assoc($q_pasien)['total'] ?? 0;
 
-// Feedback Terbaru (Sinkron dengan simpan_feedback.php)
+// Feedback Terbaru
 $q_feedback = mysqli_query($koneksi, "SELECT * FROM feedback ORDER BY id DESC LIMIT 5");
-$total_feedback = mysqli_fetch_assoc($q_feedback)['total'] ?? 0;
+$total_feedback_res = mysqli_query($koneksi, "SELECT COUNT(*) as total FROM feedback");
+$total_feedback = mysqli_fetch_assoc($total_feedback_res)['total'] ?? 0;
 
-// 4. DATA UNTUK GRAFIK (Perbaikan Unknown Column nomor_antrean)
+// 4. DATA UNTUK GRAFIK
 $labels = [];
 $data_grafik = [];
-$res = mysqli_query($koneksi, "SELECT poli, COUNT(*) as total FROM antrian WHERE DATE(created_at) = '$hari_ini' GROUP BY poli");
-while($row = mysqli_fetch_assoc($res)) {
-    $labels[] = $row['poli'];
-    $data_grafik[] = (int)$row['total'];
+$res_grafik = mysqli_query($koneksi, "SELECT poli, COUNT(*) as total FROM antrian WHERE DATE(created_at) = '$hari_ini' GROUP BY poli");
+
+while($row_g = mysqli_fetch_assoc($res_grafik)) {
+    $labels[] = $row_g['poli'];
+    $data_grafik[] = (int)$row_g['total'];
 }
 
-// Placeholder jika data kosong agar Chart.js tidak error
-if(empty($labels)) { $labels = ['Belum Ada Data']; $data_grafik = [0]; }
+if(empty($labels)) { 
+    $labels = ['Belum Ada Data']; 
+    $data_grafik = [0]; 
+}
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -66,7 +72,7 @@ if(empty($labels)) { $labels = ['Belum Ada Data']; $data_grafik = [0]; }
         <header class="flex justify-between items-center mb-10">
             <div>
                 <h1 class="text-3xl font-extrabold text-slate-800 tracking-tight">Panel Kendali Admin</h1>
-                <p class="text-slate-500">Selamat datang kembali, Pengelola Sistem.</p>
+                <p class="text-slate-500">Selamat datang kembali, <span class="font-bold text-slate-700"><?php echo htmlspecialchars($nama_admin); ?></span>.</p>
             </div>
             <a href="/api/logout.php" class="bg-red-500 hover:bg-red-600 text-white px-6 py-2.5 rounded-xl font-bold shadow-lg shadow-red-100 transition-all flex items-center">
                 <i class="fas fa-sign-out-alt mr-2"></i> Logout
@@ -80,7 +86,9 @@ if(empty($labels)) { $labels = ['Belum Ada Data']; $data_grafik = [0]; }
                 </div>
                 <h2 class="text-2xl font-bold text-slate-800 mb-2">Manajemen Petugas</h2>
                 <p class="text-slate-400 text-sm mb-6 leading-relaxed">Kelola akun Dokter, Perawat, dan Staff klinik Anda di sini.</p>
-                <a href="/api/kelola_petugas.php" class="inline-block text-emerald-500 font-bold hover:translate-x-2 transition-transform">Kelola Petugas <i class="fas fa-arrow-right ml-1"></i></a>
+                <a href="/api/kelola_petugas.php" class="inline-block text-emerald-500 font-bold hover:translate-x-2 transition-transform">
+                    Kelola Petugas <i class="fas fa-arrow-right ml-1"></i>
+                </a>
             </div>
 
             <div class="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100 hover:shadow-md transition-all">
@@ -89,7 +97,9 @@ if(empty($labels)) { $labels = ['Belum Ada Data']; $data_grafik = [0]; }
                 </div>
                 <h2 class="text-2xl font-bold text-slate-800 mb-2">Manajemen Pasien</h2>
                 <p class="text-slate-400 text-sm mb-6 leading-relaxed">Edit profil pasien atau reset akun pasien yang terdaftar.</p>
-                <a href="/api/kelola_pasien.php" class="inline-block text-blue-500 font-bold hover:translate-x-2 transition-transform">Kelola Pasien <i class="fas fa-arrow-right ml-1"></i></a>
+                <a href="/api/kelola_pasien.php" class="inline-block text-blue-500 font-bold hover:translate-x-2 transition-transform">
+                    Kelola Pasien <i class="fas fa-arrow-right ml-1"></i>
+                </a>
             </div>
         </div>
 
@@ -97,7 +107,7 @@ if(empty($labels)) { $labels = ['Belum Ada Data']; $data_grafik = [0]; }
             <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
                 <div>
                     <h2 class="text-2xl font-extrabold text-slate-800">Suara Pasien</h2>
-                    <p class="text-slate-400 text-sm">Masukan terbaru untuk evaluasi pelayanan</p>
+                    <p class="text-slate-400 text-sm">Masukan terbaru untuk evaluasi pelayanan (Total: <?php echo $total_feedback; ?>)</p>
                 </div>
                 <div class="flex items-center gap-3">
                     <span class="hidden md:block bg-slate-50 text-slate-400 text-[10px] font-bold px-3 py-1.5 rounded-full uppercase tracking-wider">
@@ -113,12 +123,10 @@ if(empty($labels)) { $labels = ['Belum Ada Data']; $data_grafik = [0]; }
 
             <div class="overflow-y-auto pr-2 space-y-3 custom-scrollbar" style="max-height: 450px;">
                 <?php
-                
                 if (mysqli_num_rows($q_feedback) > 0) {
                     while ($f = mysqli_fetch_assoc($q_feedback)) {
-                        // Logika Warna Badge
-                        $kepuasan = strtoupper($f['kepuasan']);
-                        $badgeClass = "bg-slate-100 text-slate-500"; // Default
+                        $kepuasan = strtoupper($f['kepuasan'] ?? '');
+                        $badgeClass = "bg-slate-100 text-slate-500"; 
                         
                         if ($kepuasan == 'SANGAT PUAS') $badgeClass = "bg-emerald-100 text-emerald-600";
                         elseif ($kepuasan == 'PUAS') $badgeClass = "bg-blue-100 text-blue-600";
@@ -134,7 +142,7 @@ if(empty($labels)) { $labels = ['Belum Ada Data']; $data_grafik = [0]; }
                             <div class="flex flex-wrap items-center gap-2 mb-1">
                                 <span class="font-bold text-slate-700"><?php echo htmlspecialchars($f['nama_pasien']); ?></span>
                                 <span class="text-[9px] <?php echo $badgeClass; ?> px-2.5 py-0.5 rounded-full font-black tracking-wider uppercase">
-                                    <?php echo $f['kepuasan']; ?>
+                                    <?php echo htmlspecialchars($f['kepuasan']); ?>
                                 </span>
                             </div>
                             <p class="text-sm text-slate-500 leading-relaxed italic">"<?php echo htmlspecialchars($f['saran']); ?>"</p>
@@ -143,11 +151,15 @@ if(empty($labels)) { $labels = ['Belum Ada Data']; $data_grafik = [0]; }
                     
                     <div class="flex items-center justify-between md:justify-end gap-6 mt-4 md:mt-0">
                         <div class="text-left md:text-right">
-                            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-tighter"><?php echo date('d M Y', strtotime($f['created_at'])); ?></p>
-                            <p class="text-[10px] text-slate-300 font-medium"><?php echo date('H:i', strtotime($f['created_at'])); ?> WIB</p>
+                            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">
+                                <?php echo date('d M Y', strtotime($f['created_at'])); ?>
+                            </p>
+                            <p class="text-[10px] text-slate-300 font-medium">
+                                <?php echo date('H:i', strtotime($f['created_at'])); ?> WIB
+                            </p>
                         </div>
                         <a href="/api/hapus_feedback.php?id=<?php echo $f['id']; ?>" 
-                           onclick="return confirm('Hapus feedback dari <?php echo $row['nama_pasien']; ?>?')"
+                           onclick="return confirm('Hapus feedback dari <?php echo htmlspecialchars($f['nama_pasien']); ?>?')"
                            class="w-10 h-10 flex items-center justify-center rounded-xl bg-white text-slate-300 hover:bg-red-50 hover:text-red-500 shadow-sm transition-all">
                             <i class="fas fa-trash-alt text-sm"></i>
                         </a>
@@ -157,11 +169,12 @@ if(empty($labels)) { $labels = ['Belum Ada Data']; $data_grafik = [0]; }
                 <?php 
                     }
                 } else {
-                    echo "
+                ?>
                     <div class='flex flex-col items-center justify-center py-20 text-slate-300'>
                         <i class='fas fa-inbox text-5xl mb-4'></i>
                         <p class='italic font-medium'>Belum ada masukan dari pasien.</p>
-                    </div>";
+                    </div>
+                <?php
                 }
                 ?>
             </div> 

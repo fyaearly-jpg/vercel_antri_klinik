@@ -46,6 +46,16 @@ if ($res && mysqli_num_rows($res) > 0) {
     $labels = ['Belum Ada Data'];
     $data_grafik = [0];
 }
+
+// Menghitung jumlah antrean per hari selama 7 hari terakhir
+$data_kunjungan = [];
+for ($i = 6; $i >= 0; $i--) {
+    $tgl = date('Y-m-d', strtotime("-$i days"));
+    $res = mysqli_query($koneksi, "SELECT COUNT(*) as total FROM antrian WHERE DATE(created_at) = '$tgl'");
+    $row = mysqli_fetch_assoc($res);
+    $data_kunjungan[] = (int)$row['total'];
+}
+$data_grafik_json = json_encode($data_kunjungan);
 ?>
 
 <!DOCTYPE html>
@@ -153,6 +163,44 @@ if ($res && mysqli_num_rows($res) > 0) {
         </p>
 
     </div>
+
+    <script>
+        const ctx = document.getElementById('statistikChart').getContext('2d');
+        
+        // Pastikan data ini diambil dari query database Anda
+        // Contoh data dummy jika data asli belum ditarik:
+        const dataKunjungan = <?php echo json_encode($data_grafik_anda ?? [0,0,0,0,0,0,0]); ?>;
+        const labelHari = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labelHari,
+                datasets: [{
+                    label: 'Jumlah Pengunjung',
+                    data: dataKunjungan,
+                    borderColor: '#10b981',
+                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 5,
+                    pointBackgroundColor: '#10b981'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: { beginAtZero: true, grid: { display: false } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+    </script>
 
     <script>
        function refreshMonitoring() {
