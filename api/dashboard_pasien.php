@@ -194,10 +194,9 @@ async function ambilAntrean() {
 
     const fd = new FormData();
     fd.append('poli', poli);
-    // Tidak perlu kirim id_pasien via FormData karena PHP sudah ambil dari Cookie
 
     try {
-        // Gunakan rute sesuai vercel.json
+        // GUNAKAN RUTE CLEAN URL (tanpa .php) sesuai vercel.json
         const res = await fetch('/tambah_antrian_terbaru', { 
             method: 'POST', 
             body: fd 
@@ -207,19 +206,17 @@ async function ambilAntrean() {
 
         if (data.success) {
             // Berhasil: Refresh untuk memunculkan tiket
-            location.reload();
+            window.location.href = '/dashboard_pasien'; 
         } else {
-            // Gagal: Tampilkan pesan error, JANGAN reload
+            // GAGAL: Tampilkan pesan, jangan melempar/refresh!
             alertEl.textContent = data.message;
             alertEl.classList.remove('hidden');
             btn.disabled = false;
             btn.textContent = 'Ambil Nomor Antrean';
         }
     } catch (e) {
-        alertEl.textContent = 'Terjadi kesalahan koneksi ke server.';
-        alertEl.classList.remove('hidden');
-        btn.disabled = false;
-        btn.textContent = 'Ambil Nomor Antrean';
+        // Jika dilempar ke login oleh server (CORS/Auth error), arahkan manual
+        window.location.href = '/login?pesan=sesi_habis';
     }
 }
  

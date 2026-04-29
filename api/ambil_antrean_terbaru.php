@@ -2,16 +2,18 @@
 header("Content-Type: application/json");
 include 'koneksi.php';
 
+// Ambil data dari Cookie
 $cookie_raw = $_COOKIE['user_session'] ?? null;
 $cookie_data = $cookie_raw ? json_decode(base64_decode($cookie_raw), true) : null;
 
+// PERBAIKAN: Jika sesi habis, kirim JSON, jangan header("Location...")
 if (!$cookie_data || $cookie_data['role'] !== 'pasien') {
     echo json_encode(["success" => false, "message" => "Sesi habis, silakan login ulang"]);
     exit();
 }
 
-$poli      = trim($_POST['poli'] ?? '');
-$id_pasien = $cookie_data['id']; // Langsung ambil dari cookie agar lebih aman
+$poli = trim($_POST['poli'] ?? '');
+$id_pasien = $cookie_data['id']; // Ambil dari cookie// Langsung ambil dari cookie agar lebih aman
 $tanggal   = date('Y-m-d');
 
 if (empty($poli)) { // Cukup cek poli saja
