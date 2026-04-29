@@ -10,20 +10,22 @@ if (!$cookie_data || $cookie_data['role'] !== 'pasien') {
 }
 
 // 1. Definisikan variabel dengan benar
-$id_user   = $cookie_data['id'];
-$nama_user = $cookie_data['nama'] ?? 'Pasien';
+// ... [kode atasnya tetap sama] ...
+$id_user   = $cookie_data['id'] ?? 'KOSONG';
+$nama_user = $cookie_data['nama'] ?? 'KOSONG';
 $tanggal   = date('Y-m-d');
-
-// 2. Query mencari tiket aktif hari ini
+ 
+// FIX: Pastikan kita hanya mencari tiket hari ini yang BELUM SELESAI
 $sql = "SELECT * FROM antrian 
-        WHERE id_pasien = '$id_user' 
-        AND DATE(created_at) = '$tanggal' 
+        WHERE id_pasien='$id_user' 
+        AND DATE(created_at)='$tanggal' 
         AND status != 'selesai' 
         ORDER BY id DESC LIMIT 1";
-        
-$query = mysqli_query($koneksi, $sql);
+
+$query        = mysqli_query($koneksi, $sql);
 $data_antrian = mysqli_fetch_assoc($query);
 
+// Jika ada datanya, berarti dia punya antrean aktif
 $punya_antrean_aktif = ($data_antrian) ? true : false;
 ?>
 <!DOCTYPE html>
