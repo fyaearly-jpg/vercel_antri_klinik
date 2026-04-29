@@ -234,18 +234,22 @@ async function ambilAntrean() {
 function bukaModal()  { document.getElementById('modal-feedback').classList.replace('hidden', 'flex'); }
 function tutupModal() { document.getElementById('modal-feedback').classList.replace('flex', 'hidden'); }
  
+// Di dalam file antri_klinik_digital/api/dashboard_pasien.php
+
 async function kirimFeedback() {
     const btn = document.getElementById('btn-kirim');
     btn.disabled    = true;
     btn.textContent = 'Mengirim...';
- 
+
     const fd = new FormData();
+    // Pastikan nama variabel 'nama_pasien', 'kepuasan', dan 'saran' sesuai dengan simpan_feedback.php
     fd.append('nama_pasien', '<?php echo addslashes($nama_user); ?>');
     fd.append('kepuasan',    document.getElementById('kepuasan').value);
     fd.append('saran',       document.getElementById('saran').value);
- 
-    await fetch('/api/kirim_feedback.php', { method: 'POST', body: fd });
-    window.location.href = '/login';
+
+    // Ganti /api/kirim_feedback.php menjadi /api/simpan_feedback.php
+    await fetch('/api/simpan_feedback.php', { method: 'POST', body: fd });
+    window.location.href = '/logout'; // Redirect ke logout setelah selesai
 }
  
 // =====================
