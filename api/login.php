@@ -29,7 +29,6 @@
             <p class="text-slate-400 text-sm mt-1 font-medium">Silakan masuk ke akun Anda</p>
         </div>
 
-        <?php 
         <?php if (isset($_GET['pesan'])): ?>
             <div class="mb-4 p-3 rounded-xl text-sm font-bold <?php 
                 echo ($_GET['pesan'] == 'sukses_daftar') ? 'bg-emerald-100 text-emerald-600' : 
