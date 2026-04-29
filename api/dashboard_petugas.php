@@ -165,27 +165,22 @@ $data_grafik_json = json_encode($data_kunjungan);
     </div>
 
     <script>
-        const ctx = document.getElementById('statistikChart').getContext('2d');
+        // Menggunakan ID yang benar: chartPoli
+        const ctx = document.getElementById('chartPoli').getContext('2d');
         
-        // Pastikan data ini diambil dari query database Anda
-        // Contoh data dummy jika data asli belum ditarik:
-        const dataKunjungan = <?php echo json_encode($data_grafik_anda ?? [0,0,0,0,0,0,0]); ?>;
-        const labelHari = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
+        // Mengambil data Poli dari PHP yang sudah kita buat di atas
+        const labelPoli = <?php echo json_encode($labels); ?>;
+        const dataPoli = <?php echo json_encode($data_grafik); ?>;
 
         new Chart(ctx, {
-            type: 'line',
+            type: 'bar', // Grafik batang agar lebih jelas melihat perbandingan poli
             data: {
-                labels: labelHari,
+                labels: labelPoli,
                 datasets: [{
-                    label: 'Jumlah Pengunjung',
-                    data: dataKunjungan,
-                    borderColor: '#10b981',
-                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                    borderWidth: 3,
-                    fill: true,
-                    tension: 0.4,
-                    pointRadius: 5,
-                    pointBackgroundColor: '#10b981'
+                    label: 'Jumlah Pasien',
+                    data: dataPoli,
+                    backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#8b5cf6'], // Warna warni
+                    borderRadius: 8,
                 }]
             },
             options: {
@@ -195,8 +190,10 @@ $data_grafik_json = json_encode($data_kunjungan);
                     legend: { display: false }
                 },
                 scales: {
-                    y: { beginAtZero: true, grid: { display: false } },
-                    x: { grid: { display: false } }
+                    y: { 
+                        beginAtZero: true, 
+                        ticks: { stepSize: 1 } // Angka pasien pasti bulat (1, 2, 3)
+                    }
                 }
             }
         });
