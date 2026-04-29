@@ -102,6 +102,10 @@
       "dest": "/api/hapus_user.php"
     },
     {
+      "src": "/verifikasi_petugas", 
+      "dest": "/api/verifikasi_petugas.php"
+    },
+    {
       "src": "/css/(.*)",
       "dest": "/css/$1"
     },
