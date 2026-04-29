@@ -4,8 +4,17 @@ include "koneksi.php";
 
 $email    = mysqli_real_escape_string($koneksi, $_POST['email']);
 $nama     = mysqli_real_escape_string($koneksi, $_POST['nama']);
-$role     = $_POST['role']; // admin atau petugas
 $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
+
+// Pastikan nilai role sesuai dengan ENUM di database (super_admin, admin, staff)
+$role_input = $_POST['role']; 
+$role = 'staff'; // Default
+
+if ($role_input === 'admin') {
+    $role = 'admin';
+} elseif ($role_input === 'staff' || $role_input === 'petugas') {
+    $role = 'staff'; // Di database Anda, petugas menggunakan label 'staff'
+}
 
 // Cek email duplikat
 $cek = mysqli_query($koneksi, "SELECT id FROM petugas WHERE email='$email'");
