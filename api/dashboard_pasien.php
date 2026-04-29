@@ -197,7 +197,7 @@ async function ambilAntrean() {
     fd.append('id_pasien', '<?php echo $id_user; ?>');
  
     try {
-        const res  = await fetch('/api/ambil_antrean_terbaru.php', { method: 'POST', body: fd });
+        const res = await fetch('/tambah_antrian_terbaru', { method: 'POST', body: fd });
  
         // Cek apakah response valid JSON
         const text = await res.text();

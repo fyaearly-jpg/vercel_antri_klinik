@@ -2,20 +2,22 @@
 header("Content-Type: application/json");
 include 'koneksi.php';
 
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    echo json_encode(["success" => false, "message" => "Method tidak valid"]);
+$cookie_raw = $_COOKIE['user_session'] ?? null;
+$cookie_data = $cookie_raw ? json_decode(base64_decode($cookie_raw), true) : null;
+
+if (!$cookie_data || $cookie_data['role'] !== 'pasien') {
+    echo json_encode(["success" => false, "message" => "Sesi habis, silakan login ulang"]);
     exit();
 }
 
 $poli      = trim($_POST['poli'] ?? '');
-$id_pasien = trim($_POST['id_pasien'] ?? '');
+$id_pasien = $cookie_data['id']; // Langsung ambil dari cookie agar lebih aman
 $tanggal   = date('Y-m-d');
 
 if (empty($poli) || empty($id_pasien)) {
     echo json_encode([
         "success" => false,
-        "message" => "Data tidak lengkap",
-        "debug"   => ["poli" => $poli, "id_pasien" => $id_pasien]
+        "message" => "Data tidak lengkap"
     ]);
     exit();
 }
@@ -23,7 +25,7 @@ if (empty($poli) || empty($id_pasien)) {
 $poli_escaped      = mysqli_real_escape_string($koneksi, $poli);
 $id_pasien_escaped = mysqli_real_escape_string($koneksi, $id_pasien);
 
-// Cek antrean existing
+// 1. Cek antrean existing
 $cek = mysqli_query($koneksi,
     "SELECT nomor_antrean, poli, status FROM antrian 
      WHERE id_pasien='$id_pasien_escaped' AND DATE(created_at)='$tanggal' LIMIT 1"
@@ -31,7 +33,7 @@ $cek = mysqli_query($koneksi,
 
 if ($cek && mysqli_num_rows($cek) > 0) {
     $ex = mysqli_fetch_assoc($cek);
-    mysqli_free_result($cek); // ✅ FIX: Bebaskan result set
+    mysqli_free_result($cek); // Bebaskan jika ada hasil
     echo json_encode([
         "success" => true,
         "nomor"   => $ex['nomor_antrean'],
@@ -41,28 +43,29 @@ if ($cek && mysqli_num_rows($cek) > 0) {
     ]);
     exit();
 }
-mysqli_free_result($cek); // ✅ FIX: Bebaskan result set meski kosong
+if ($cek) mysqli_free_result($cek); // Bebaskan hanya jika query berhasil (meski 0 baris)
 
-// Hitung nomor berikutnya
+// 2. Hitung nomor berikutnya
 $kode_poli = strtoupper(substr($poli, 0, 1));
 $q_max = mysqli_query($koneksi,
     "SELECT nomor_antrean FROM antrian 
      WHERE poli='$poli_escaped' AND DATE(created_at)='$tanggal' 
      ORDER BY id DESC LIMIT 1"
 );
+
 $row_max = mysqli_fetch_assoc($q_max);
-mysqli_free_result($q_max); // ✅ FIX: Wajib free sebelum prepare()
+if ($q_max) mysqli_free_result($q_max); // Bebaskan sebelum masuk ke prepare
 
 if ($row_max) {
-    $last_no = explode('-', $row_max['nomor_antrean']);
-    $next_no = (int)end($last_no) + 1;
+    $last_no_parts = explode('-', $row_max['nomor_antrean']);
+    $next_no = (int)end($last_no_parts) + 1;
 } else {
     $next_no = 1;
 }
 $nomor_baru = $kode_poli . "-" . $next_no;
 
-// ✅ FIX: Pastikan koneksi bersih sebelum prepare
-mysqli_next_result($koneksi); // flush sisa result jika ada
+// 3. Simpan Antrean
+mysqli_next_result($koneksi); // Bersihkan sisa result set
 
 $stmt = $koneksi->prepare(
     "INSERT INTO antrian (id_pasien, nomor_antrean, poli, status, waktu_daftar, created_at) 
@@ -72,12 +75,13 @@ $stmt = $koneksi->prepare(
 if (!$stmt) {
     echo json_encode([
         "success" => false,
-        "message" => "Prepare gagal: " . $koneksi->error
+        "message" => "Server Error (Prepare): " . $koneksi->error
     ]);
     exit();
 }
 
-$stmt->bind_param("sss", $id_pasien, $nomor_baru, $poli);
+// "iss" -> i (id_pasien/int), s (nomor/string), s (poli/string)
+$stmt->bind_param("iss", $id_pasien, $nomor_baru, $poli);
 
 if ($stmt->execute()) {
     echo json_encode([
@@ -89,10 +93,10 @@ if ($stmt->execute()) {
 } else {
     echo json_encode([
         "success" => false,
-        "message" => "Gagal simpan: " . $stmt->error
+        "message" => "Database Error: " . $stmt->error
     ]);
 }
 
 $stmt->close();
-mysqli_close($koneksi); // ✅ Tutup koneksi di akhir
+mysqli_close($koneksi);
 ?>
