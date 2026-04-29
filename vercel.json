@@ -90,6 +90,18 @@
       "dest": "/api/simpan_feedback.php"
     },
     {
+      "src": "/edit_petugas", 
+      "dest": "/api/edit_petugas.php"
+    },
+    {
+      "src": "/proses_edit_petugas", 
+      "dest": "/api/proses_edit_petugas.php"
+    },
+    {
+      "src": "/hapus_user", 
+      "dest": "/api/hapus_user.php"
+    },
+    {
       "src": "/css/(.*)",
       "dest": "/css/$1"
     },
