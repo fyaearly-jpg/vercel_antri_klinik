@@ -24,10 +24,12 @@ $q_pasien = mysqli_query($koneksi, "SELECT COUNT(*) as total FROM pasien");
 $total_pasien = mysqli_fetch_assoc($q_pasien)['total'] ?? 0;
 
 // AMBIL DATA FEEDBACK (Cukup simpan di variabel, jangan di-loop di sini)
-$q_feedback = mysqli_query($koneksi, "SELECT * FROM feedback ORDER BY id DESC LIMIT 5");
-$total_f_res = mysqli_query($koneksi, "SELECT COUNT(*) as total FROM feedback");
-$total_feedback = mysqli_fetch_assoc($total_f_res)['total'] ?? 0;
-
+$q_feedback = mysqli_query($koneksi, "
+    SELECT f.*, p.nama_pasien 
+    FROM feedback f 
+    LEFT JOIN pasien p ON f.id_pasien = p.id 
+    ORDER BY f.id DESC LIMIT 5
+");
 // [LANJUTKAN KE KODE HTML DI BAWAHNYA...]
 ?>
 <!DOCTYPE html>
@@ -133,10 +135,10 @@ $total_feedback = mysqli_fetch_assoc($total_f_res)['total'] ?? 0;
                     <div class="flex items-center justify-between md:justify-end gap-6 mt-4 md:mt-0">
                         <div class="text-left md:text-right">
                             <p class="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">
-                                <?php echo date('d M Y', strtotime($f['created_at'])); ?>
+                                <?php echo date('d M Y', strtotime($f['tgl_kirim'])); ?>
                             </p>
                             <p class="text-[10px] text-slate-300 font-medium">
-                                <?php echo date('H:i', strtotime($f['created_at'])); ?> WIB
+                                <?php echo date('H:i', strtotime($f['tgl_kirim'])); ?> WIB
                             </p>
                         </div>
                         <a href="/api/hapus_feedback.php?id=<?php echo $f['id']; ?>" 
