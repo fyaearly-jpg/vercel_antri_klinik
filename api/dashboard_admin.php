@@ -90,7 +90,7 @@ $q_feedback = mysqli_query($koneksi, "
             <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
                 <div>
                     <h2 class="text-2xl font-extrabold text-slate-800">Suara Pasien</h2>
-                    <p class="text-slate-400 text-sm">Masukan terbaru untuk evaluasi pelayanan (Total: <?php echo $total_feedback; ?>)</p>
+                    <p class="text-slate-400 text-sm">Masukan terbaru untuk evaluasi pelayanan</p>
                 </div>
                 <div class="flex items-center gap-3">
                     <span class="hidden md:block bg-slate-50 text-slate-400 text-[10px] font-bold px-3 py-1.5 rounded-full uppercase tracking-wider">
