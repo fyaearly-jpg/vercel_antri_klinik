@@ -1,5 +1,5 @@
 <?php
-// Baca sesi dari Cookie (sesuai sistem auth yang dipakai)
+// dashboard_pasien.php
 $cookie_raw  = $_COOKIE['user_session'] ?? null;
 $cookie_data = $cookie_raw ? json_decode(base64_decode($cookie_raw), true) : null;
 
@@ -14,81 +14,248 @@ $nama_pasien = htmlspecialchars($cookie_data['nama']);
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>Dashboard Pasien - Klinik Sehat</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pilih Poli – Klinik Sehat</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-</head>
-<body class="bg-slate-50">
-    <nav class="bg-emerald-600 p-4 text-white flex justify-between shadow-md">
-        <h1 class="font-bold tracking-wide">Klinik Sehat</h1>
-        <div class="flex gap-4 items-center">
-            <span class="font-medium">Halo, <?= $nama_pasien; ?></span>
-            <a href="logout.php" class="text-sm bg-emerald-700 hover:bg-emerald-800 px-3 py-1 rounded transition-colors">Keluar</a>
-        </div>
-    </nav>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        * { font-family: 'Plus Jakarta Sans', sans-serif; }
 
-    <div class="p-8 max-w-5xl mx-auto">
-        <h2 class="text-2xl font-bold mb-6 text-slate-800">Selamat Datang di Layanan Digital</h2>
-        
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col h-full">
-                <h3 class="font-bold text-lg mb-2 text-slate-800">Ambil Antrean</h3>
-                <p class="text-slate-500 mb-4 text-sm flex-grow">Dapatkan nomor antrean pemeriksaan hari ini secara online.</p>
-                <button class="bg-emerald-600 text-white px-4 py-3 rounded-xl w-full font-bold hover:bg-emerald-700 transition-colors shadow-md">Ambil Nomor</button>
-            </div>
-            
-            <div class="bg-emerald-50 border-2 border-emerald-400 p-6 rounded-2xl shadow-md text-center transform transition-all hover:scale-105 flex flex-col h-full justify-center">
-                <div class="flex items-center justify-center gap-2 mb-2">
-                    <div class="w-3 h-3 bg-red-500 rounded-full animate-ping"></div>
-                    <h3 class="text-xs font-bold text-slate-600 uppercase tracking-wide">Sedang Dilayani Saat Ini</h3>
-                </div>
-                <h1 id="nomor-aktif-sekarang" class="text-6xl font-black text-emerald-600 my-2 tracking-tighter drop-shadow-sm">--</h1>
-                <p class="text-sm text-slate-500">Poli Tujuan: <span id="poli-aktif-sekarang" class="font-bold text-slate-700">Memuat...</span></p>
-            </div>
+        body { background: #f0fdf8; min-height: 100vh; }
 
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col h-full">
-                <h3 class="font-bold text-lg mb-2 text-slate-800">Kirim Feedback</h3>
-                <p class="text-slate-500 mb-4 text-sm">Gimana pengalaman kamu hari ini?</p>
-                
-                <form action="proses_feedback.php" method="POST" class="space-y-3 flex-grow flex flex-col justify-end">
-                    <div>
-                        <label class="block mb-1 font-semibold text-slate-700 text-xs uppercase">Tingkat Kepuasan</label>
-                        <select name="kepuasan" class="w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 outline-none focus:ring-2 focus:ring-emerald-400 transition-all text-sm">
-                            <option value="Sangat Puas">Sangat Puas 😍</option>
-                            <option value="Puas">Puas 🙂</option>
-                            <option value="Cukup">Cukup 😐</option>
-                            <option value="Kurang">Kurang 🙁</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block mb-1 font-semibold text-slate-700 text-xs uppercase">Saran</label>
-                        <textarea name="saran" rows="2" class="w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 outline-none focus:ring-2 focus:ring-emerald-400 transition-all text-sm" placeholder="Tulis saran..."></textarea>
-                    </div>
-                    <button type="submit" class="bg-slate-800 text-white px-4 py-2.5 rounded-xl w-full font-bold hover:bg-slate-900 transition-colors shadow-md mt-2">
-                        KIRIM SARAN
-                    </button>
-                </form>
-            </div>
-            
-        </div>
-    </div>
-
-    <script>
-        function pantauAntreanRealTime() {
-            // Pakai get_antrian_sekarang.php — khusus untuk pantau nomor yang sedang dipanggil
-            fetch('get_antrian_sekarang.php')
-                .then(response => response.json())
-                .then(data => {
-                    // Nama field dari DB adalah 'nomor_antrean' (bukan 'nomor_antrian')
-                    document.getElementById('nomor-aktif-sekarang').innerText = data.nomor_antrean ?? '--';
-                    document.getElementById('poli-aktif-sekarang').innerText  = data.poli ?? 'Belum ada panggilan';
-                })
-                .catch(error => console.error('Gagal mengambil data real-time:', error));
+        .poli-card {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 1.25rem;
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .poli-card:hover {
+            border-color: #10b981;
+            transform: translateY(-3px);
+            box-shadow: 0 12px 32px -8px rgba(16,185,129,0.2);
+        }
+        .poli-card.selected {
+            border-color: #10b981;
+            background: #f0fdf4;
+            box-shadow: 0 0 0 4px rgba(16,185,129,0.15);
+        }
+        .poli-card.selected .checkmark {
+            opacity: 1;
+            transform: scale(1);
+        }
+        .checkmark {
+            position: absolute;
+            top: 0.75rem;
+            right: 0.75rem;
+            width: 1.5rem;
+            height: 1.5rem;
+            background: #10b981;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transform: scale(0.5);
+            transition: all 0.2s ease;
+        }
+        .poli-icon {
+            width: 3.5rem;
+            height: 3.5rem;
+            border-radius: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 0.75rem;
+            font-size: 1.5rem;
         }
 
-        pantauAntreanRealTime();
-        setInterval(pantauAntreanRealTime, 3000); // Update otomatis tiap 3 detik
-    </script>
+        .btn-ambil {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            border: none;
+            border-radius: 1rem;
+            padding: 1rem 2rem;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 8px 24px -4px rgba(16,185,129,0.4);
+            width: 100%;
+        }
+        .btn-ambil:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 28px -4px rgba(16,185,129,0.5);
+        }
+        .btn-ambil:disabled {
+            background: #cbd5e1;
+            box-shadow: none;
+            cursor: not-allowed;
+        }
+
+        .wave-top {
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 200px;
+            background: linear-gradient(135deg, #10b981, #059669);
+            border-radius: 0 0 3rem 3rem;
+            z-index: 0;
+        }
+    </style>
+</head>
+<body>
+
+<div class="wave-top"></div>
+
+<!-- Navbar -->
+<nav class="relative z-10 flex items-center justify-between px-6 pt-6 pb-0">
+    <div class="flex items-center gap-3">
+        <div class="w-9 h-9 bg-white/20 rounded-xl flex items-center justify-center">
+            <i class="fas fa-hospital text-white text-sm"></i>
+        </div>
+        <span class="font-bold text-white text-lg">Klinik Sehat</span>
+    </div>
+    <div class="flex items-center gap-3">
+        <span class="text-white/80 text-sm font-medium"><?= $nama_pasien ?></span>
+        <a href="/logout" class="w-9 h-9 bg-white/20 hover:bg-white/30 rounded-xl flex items-center justify-center transition-colors">
+            <i class="fas fa-sign-out-alt text-white text-sm"></i>
+        </a>
+    </div>
+</nav>
+
+<!-- Hero -->
+<div class="relative z-10 px-6 pt-6 pb-10 text-center">
+    <p class="text-white/70 text-sm font-medium mb-1">Selamat datang,</p>
+    <h1 class="text-white text-2xl font-extrabold"><?= $nama_pasien ?> 👋</h1>
+    <p class="text-white/80 text-sm mt-2">Pilih poli tujuanmu hari ini</p>
+</div>
+
+<!-- Main Card -->
+<div class="relative z-10 mx-4 -mt-4">
+    <div class="bg-white rounded-3xl shadow-xl p-6">
+
+        <div class="flex items-center justify-between mb-5">
+            <h2 class="font-bold text-slate-800 text-lg">Pilih Poli</h2>
+            <span class="text-xs text-slate-400 bg-slate-100 px-3 py-1 rounded-full font-medium">
+                <i class="fas fa-clock mr-1"></i><?= date('d M Y') ?>
+            </span>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3 mb-6" id="poli-grid">
+
+            <div class="poli-card" onclick="pilihPoli(this, 'Umum')">
+                <div class="checkmark"><i class="fas fa-check text-white text-xs"></i></div>
+                <div class="poli-icon bg-blue-50">🩺</div>
+                <p class="font-bold text-slate-800 text-sm">Umum</p>
+                <p class="text-xs text-slate-400 mt-0.5">Pemeriksaan dasar</p>
+            </div>
+
+            <div class="poli-card" onclick="pilihPoli(this, 'Gigi')">
+                <div class="checkmark"><i class="fas fa-check text-white text-xs"></i></div>
+                <div class="poli-icon bg-emerald-50">🦷</div>
+                <p class="font-bold text-slate-800 text-sm">Gigi</p>
+                <p class="text-xs text-slate-400 mt-0.5">Kesehatan gigi & mulut</p>
+            </div>
+
+            <div class="poli-card" onclick="pilihPoli(this, 'Anak')">
+                <div class="checkmark"><i class="fas fa-check text-white text-xs"></i></div>
+                <div class="poli-icon bg-yellow-50">👶</div>
+                <p class="font-bold text-slate-800 text-sm">Anak</p>
+                <p class="text-xs text-slate-400 mt-0.5">Pediatri & tumbuh kembang</p>
+            </div>
+
+            <div class="poli-card" onclick="pilihPoli(this, 'KIA')">
+                <div class="checkmark"><i class="fas fa-check text-white text-xs"></i></div>
+                <div class="poli-icon bg-pink-50">🤰</div>
+                <p class="font-bold text-slate-800 text-sm">KIA</p>
+                <p class="text-xs text-slate-400 mt-0.5">Ibu & anak</p>
+            </div>
+
+            <div class="poli-card" onclick="pilihPoli(this, 'Lansia')">
+                <div class="checkmark"><i class="fas fa-check text-white text-xs"></i></div>
+                <div class="poli-icon bg-purple-50">👴</div>
+                <p class="font-bold text-slate-800 text-sm">Lansia</p>
+                <p class="text-xs text-slate-400 mt-0.5">Geriatri</p>
+            </div>
+
+            <div class="poli-card" onclick="pilihPoli(this, 'Jiwa')">
+                <div class="checkmark"><i class="fas fa-check text-white text-xs"></i></div>
+                <div class="poli-icon bg-rose-50">🧠</div>
+                <p class="font-bold text-slate-800 text-sm">Jiwa</p>
+                <p class="text-xs text-slate-400 mt-0.5">Kesehatan mental</p>
+            </div>
+
+        </div>
+
+        <!-- Info -->
+        <div id="info-poli" class="hidden mb-4 bg-emerald-50 border border-emerald-200 rounded-2xl px-4 py-3">
+            <p class="text-sm text-emerald-700 font-medium">
+                <i class="fas fa-check-circle mr-2"></i>Poli <strong id="label-poli">-</strong> dipilih
+            </p>
+        </div>
+
+        <button class="btn-ambil" id="btn-ambil" disabled onclick="ambilNomor()">
+            <i class="fas fa-ticket-alt mr-2"></i>Ambil Nomor Antrean
+        </button>
+
+        <!-- Loading state -->
+        <div id="loading" class="hidden text-center py-4">
+            <div class="inline-flex items-center gap-2 text-emerald-600 font-medium text-sm">
+                <i class="fas fa-spinner fa-spin"></i> Memproses...
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<p class="text-center text-slate-400 text-xs mt-6 pb-8">Antrean berlaku untuk hari ini saja</p>
+
+<script>
+let poliDipilih = '';
+
+function pilihPoli(el, namaPoli) {
+    document.querySelectorAll('.poli-card').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    poliDipilih = namaPoli;
+
+    document.getElementById('label-poli').textContent = namaPoli;
+    document.getElementById('info-poli').classList.remove('hidden');
+    document.getElementById('btn-ambil').disabled = false;
+}
+
+function ambilNomor() {
+    if (!poliDipilih) return;
+
+    document.getElementById('btn-ambil').classList.add('hidden');
+    document.getElementById('loading').classList.remove('hidden');
+
+    const formData = new FormData();
+    formData.append('poli', poliDipilih);
+
+    fetch('ambil_antrean_terbaru.php', { method: 'POST', body: formData })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                // Redirect ke halaman antrean
+                window.location.href = '/antrian_pasien';
+            } else {
+                alert(data.message || 'Gagal mengambil nomor. Coba lagi.');
+                document.getElementById('btn-ambil').classList.remove('hidden');
+                document.getElementById('loading').classList.add('hidden');
+            }
+        })
+        .catch(() => {
+            alert('Koneksi gagal. Periksa internet kamu.');
+            document.getElementById('btn-ambil').classList.remove('hidden');
+            document.getElementById('loading').classList.add('hidden');
+        });
+}
+</script>
+
 </body>
 </html>
