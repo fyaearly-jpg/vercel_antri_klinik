@@ -29,7 +29,7 @@ SET time_zone = "+00:00";
 
 CREATE TABLE `antrian` (
   `id` int(11) NOT NULL,
-  `nomor_antrian` varchar(10) NOT NULL,
+  `nomor_antrean` varchar(10) NOT NULL,
   `status` enum('menunggu','dipanggil','selesai') DEFAULT 'menunggu',
   `id_pasien` int(11) DEFAULT NULL,
   `poli` varchar(50) DEFAULT NULL,
@@ -41,7 +41,7 @@ CREATE TABLE `antrian` (
 -- Dumping data untuk tabel `antrian`
 --
 
-INSERT INTO `antrian` (`id`, `nomor_antrian`, `status`, `id_pasien`, `poli`, `created_at`, `updated_at`) VALUES
+INSERT INTO `antrian` (`id`, `nomor_antrean`, `status`, `id_pasien`, `poli`, `created_at`, `updated_at`) VALUES
 (1, '0', 'selesai', 1, 'Gigi', '2026-04-09 01:54:21', '2026-04-09 03:51:08'),
 (2, '0', 'selesai', 2, 'Umum', '2026-04-09 03:50:28', '2026-04-09 05:51:03'),
 (3, '0', 'selesai', 2, 'Umum', '2026-04-09 03:51:25', '2026-04-09 06:24:39'),

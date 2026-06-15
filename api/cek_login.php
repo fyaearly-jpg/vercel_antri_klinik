@@ -1,49 +1,48 @@
 <?php
-session_start(); // Cukup satu kali di paling atas
+// api/cek_login.php
+session_start();
 include "koneksi.php";
 
-if (isset($_POST['email'])) {
-    $email = mysqli_real_escape_string($koneksi, $_POST['email']);
-    $password = $_POST['password'];
+$email    = mysqli_real_escape_string($koneksi, $_POST['email']);
+$password = $_POST['password'];
 
-    // 1. Cek di Tabel Petugas
-    $q_petugas = mysqli_query($koneksi, "SELECT * FROM petugas WHERE email='$email'");
-    $d_petugas = mysqli_fetch_assoc($q_petugas);
+// 1. Cek di tabel Pasien dulu
+$q_pasien = mysqli_query($koneksi, "SELECT * FROM pasien WHERE email='$email'");
+$user = mysqli_fetch_assoc($q_pasien);
 
-    if ($d_petugas && password_verify($password, $d_petugas['password'])) {
-        $_SESSION['nama_lengkap'] = $d_petugas['nama_lengkap'];
-        $_SESSION['role'] = $d_petugas['role'];
-        
-        // Sesuaikan dengan route di vercel.json
-        if ($d_petugas['role'] === 'admin') {
-            header("Location: /dashboard_admin");
-        } else {
-            header("Location: /dashboard_petugas");
-        }
-        exit();
-    } 
-
-    // 2. Cek di Tabel Pasien
-    $q_pasien = mysqli_query($koneksi, "SELECT * FROM pasien WHERE email='$email'");
-    $d_pasien = mysqli_fetch_assoc($q_pasien);
-
-    // Ganti bagian akhir cek_login.php kamu jadi begini:
-    if ($d_pasien && password_verify($password, $d_pasien['password'])) {
-        $_SESSION['role'] = 'pasien';
-        $_SESSION['nama_pasien'] = $d_pasien['nama_pasien'];
-        $_SESSION['id_pasien'] = $d_pasien['id'];
-        
-        session_write_close(); // PENTING: Simpan session sebelum pindah
-        header("Location: /dashboard_pasien"); 
-        exit();
-    } else {
-        // Gunakan URL lengkap atau path yang terdaftar di vercel.json
-        header("Location: /login?error=1");
-        exit();
-    }
+if ($user && password_verify($password, $user['password'])) {
+    $nama_session = $user['nama_pasien'];
+    $role_session = 'pasien';
 } else {
-    // Jika akses file ini tanpa kirim form
-    header("Location: /login");
-    exit();
+    // 2. Jika bukan pasien, cek di tabel Petugas
+    $q_petugas = mysqli_query($koneksi, "SELECT * FROM petugas WHERE email='$email'");
+    $user = mysqli_fetch_assoc($q_petugas);
+
+    if ($user && password_verify($password, $user['password'])) {
+        // Cek Verifikasi khusus untuk Petugas/Admin
+        if ($user['status'] == 0) {
+            header("Location: /login?pesan=belum_aktif");
+            exit();
+        }
+        $nama_session = $user['nama_lengkap'];
+        $role_session = $user['role'];
+    }
+}
+
+// 3. Jika user ditemukan di salah satu tabel
+if (isset($role_session)) {
+    $user_data = base64_encode(json_encode([
+        'id'   => $user['id'],
+        'nama' => $nama_session,
+        'role' => $role_session
+    ]));
+    setcookie('user_session', $user_data, time() + (86400 * 30), "/");
+
+    // Redirect ke dashboard masing-masing
+    if ($role_session == 'admin') header("Location: /dashboard_admin");
+    elseif ($role_session == 'pasien') header("Location: /dashboard_pasien");
+    else header("Location: /dashboard_petugas");
+} else {
+    header("Location: /login?pesan=gagal");
 }
 ?>

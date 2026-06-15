@@ -1,31 +1,49 @@
 <?php
-include 'koneksi.php';
+// api/proses_register.php
+include "koneksi.php";
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $nama  = mysqli_real_escape_string($koneksi, $_POST['nama']);
-    $email = mysqli_real_escape_string($koneksi, $_POST['email']);
-    $pass  = password_hash($_POST['password'], PASSWORD_DEFAULT);
-    $role  = $_POST['role'];
+$email    = mysqli_real_escape_string($koneksi, $_POST['email']);
+$nama     = mysqli_real_escape_string($koneksi, $_POST['nama']);
+$password = password_hash($_POST['password'], PASSWORD_DEFAULT);
+$role_input = $_POST['role']; 
 
-    // Cek apakah email sudah ada di tabel petugas ATAU tabel pasien
-    $cek_petugas = mysqli_query($koneksi, "SELECT email FROM petugas WHERE email='$email'");
-    $cek_pasien  = mysqli_query($koneksi, "SELECT email FROM pasien WHERE email='$email'");
+// Tentukan tabel dan status awal
+if ($role_input === 'pasien') {
+    $tabel = 'pasien';
+    $role = 'pasien';
+    $status_awal = 1; // Pasien langsung aktif
+    $kolom_nama = 'nama_pasien';
+} else {
+    $tabel = 'petugas';
+    $role = ($role_input === 'admin') ? 'admin' : 'staff';
+    $status_awal = 0; // Petugas/Admin butuh verifikasi
+    $kolom_nama = 'nama_lengkap';
+}
 
-    if (mysqli_num_rows($cek_petugas) > 0 || mysqli_num_rows($cek_pasien) > 0) {
-    echo "<script>alert('Email ini sudah terdaftar di sistem!'); window.history.back();</script>";
+// Cek email duplikat di tabel yang sesuai
+$cek = mysqli_query($koneksi, "SELECT id FROM $tabel WHERE email='$email'");
+if (mysqli_num_rows($cek) > 0) {
+    header("Location: /register?error=email_exists");
     exit();
 }
 
-    if ($role !== 'pasien') {
-        $query = "INSERT INTO petugas (nama_lengkap, email, password, role) VALUES ('$nama', '$email', '$pass', '$role')";
-    } else {
-        $query = "INSERT INTO pasien (nama_pasien, email, password, role) VALUES ('$nama', '$email', '$pass', 'pasien')";
-    }
+// Simpan data
+if ($tabel === 'pasien') {
+    $query = mysqli_query($koneksi, "INSERT INTO pasien (nama_pasien, email, password, role) 
+                                     VALUES ('$nama', '$email', '$password', 'pasien')");
+} else {
+    $query = mysqli_query($koneksi, "INSERT INTO petugas (nama_lengkap, email, password, role, status) 
+                                     VALUES ('$nama', '$email', '$password', '$role', $status_awal)");
+}
 
-    if (mysqli_query($koneksi, $query)) {
-        echo "<script>alert('Berhasil daftar sebagai $role! Silakan login.'); window.location.href='index.php';</script>";
+if ($query) {
+    // Redirect berbeda berdasarkan role
+    if ($role_input === 'pasien') {
+        header("Location: /login?pesan=sukses_daftar"); // Pasien langsung bisa login
     } else {
-        echo "Error: " . mysqli_error($koneksi);
+        header("Location: /login?pesan=menunggu_verifikasi"); // Petugas harus tunggu
     }
+} else {
+    echo "Error: " . mysqli_error($koneksi);
 }
 ?>

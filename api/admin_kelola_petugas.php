@@ -15,7 +15,7 @@ if (isset($_GET['hapus'])) {
     header("Location: kelola_petugas.php");
 }
 
-$petugas = mysqli_query($conn, "SELECT * FROM users ORDER BY role ASC");
+$petugas = mysqli_query($koneksi, "SELECT * FROM users ORDER BY role ASC");
 ?>
 
 <!DOCTYPE html>
