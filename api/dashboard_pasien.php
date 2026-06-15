@@ -1,10 +1,14 @@
 <?php
-session_start();
+// Baca sesi dari Cookie (sesuai sistem auth yang dipakai)
+$cookie_raw  = $_COOKIE['user_session'] ?? null;
+$cookie_data = $cookie_raw ? json_decode(base64_decode($cookie_raw), true) : null;
 
-if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'pasien') {
+if (!$cookie_data || $cookie_data['role'] !== 'pasien') {
     header("Location: /login");
     exit();
 }
+
+$nama_pasien = htmlspecialchars($cookie_data['nama']);
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -18,7 +22,7 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'pasien') {
     <nav class="bg-emerald-600 p-4 text-white flex justify-between shadow-md">
         <h1 class="font-bold tracking-wide">Klinik Sehat</h1>
         <div class="flex gap-4 items-center">
-            <span class="font-medium">Halo, <?= htmlspecialchars($_SESSION['nama_pasien']); ?></span>
+            <span class="font-medium">Halo, <?= $nama_pasien; ?></span>
             <a href="logout.php" class="text-sm bg-emerald-700 hover:bg-emerald-800 px-3 py-1 rounded transition-colors">Keluar</a>
         </div>
     </nav>
@@ -72,13 +76,13 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'pasien') {
 
     <script>
         function pantauAntreanRealTime() {
-            fetch('ambil_antrean_terbaru.php')
+            // Pakai get_antrian_sekarang.php — khusus untuk pantau nomor yang sedang dipanggil
+            fetch('get_antrian_sekarang.php')
                 .then(response => response.json())
                 .then(data => {
-                    if(data && data.nomor_antrian) {
-                        document.getElementById('nomor-aktif-sekarang').innerText = data.nomor_antrian;
-                        document.getElementById('poli-aktif-sekarang').innerText = data.poli;
-                    }
+                    // Nama field dari DB adalah 'nomor_antrean' (bukan 'nomor_antrian')
+                    document.getElementById('nomor-aktif-sekarang').innerText = data.nomor_antrean ?? '--';
+                    document.getElementById('poli-aktif-sekarang').innerText  = data.poli ?? 'Belum ada panggilan';
                 })
                 .catch(error => console.error('Gagal mengambil data real-time:', error));
         }
