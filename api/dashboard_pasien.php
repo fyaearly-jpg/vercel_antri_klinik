@@ -1,8 +1,7 @@
 <?php
 session_start();
 
-// Validasi menggunakan terminologi standar sistem
-if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'user') {
+if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'pasien') {
     header("Location: /login");
     exit();
 }
@@ -11,14 +10,15 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'user') {
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>Dashboard User - Klinik Sehat</title>
+    <title>Dashboard Pasien - Klinik Sehat</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body class="bg-slate-50">
     <nav class="bg-emerald-600 p-4 text-white flex justify-between shadow-md">
         <h1 class="font-bold tracking-wide">Klinik Sehat</h1>
         <div class="flex gap-4 items-center">
-            <span class="font-medium">Halo, <?= $_SESSION['nama'] ?? 'User'; ?></span>
+            <span class="font-medium">Halo, <?= htmlspecialchars($_SESSION['nama_pasien']); ?></span>
             <a href="logout.php" class="text-sm bg-emerald-700 hover:bg-emerald-800 px-3 py-1 rounded transition-colors">Keluar</a>
         </div>
     </nav>
@@ -72,22 +72,19 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'user') {
 
     <script>
         function pantauAntreanRealTime() {
-            fetch('cek_status_antrean.php')
+            fetch('ambil_antrean_terbaru.php')
                 .then(response => response.json())
                 .then(data => {
-                    if(data && data.nomor_antrean) {
-                        document.getElementById('nomor-aktif-sekarang').innerText = data.nomor_antrean;
+                    if(data && data.nomor_antrian) {
+                        document.getElementById('nomor-aktif-sekarang').innerText = data.nomor_antrian;
                         document.getElementById('poli-aktif-sekarang').innerText = data.poli;
-                    } else {
-                        document.getElementById('nomor-aktif-sekarang').innerText = "KOSONG";
-                        document.getElementById('poli-aktif-sekarang').innerText = "Belum ada antrean berjalan";
                     }
                 })
                 .catch(error => console.error('Gagal mengambil data real-time:', error));
         }
 
         pantauAntreanRealTime();
-        setInterval(pantauAntreanRealTime, 3000);
+        setInterval(pantauAntreanRealTime, 3000); // Update otomatis tiap 3 detik
     </script>
 </body>
 </html>
