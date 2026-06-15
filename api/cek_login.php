@@ -3,46 +3,62 @@
 session_start();
 include "koneksi.php";
 
-$email    = mysqli_real_escape_string($koneksi, $_POST['email']);
-$password = $_POST['password'];
+if (isset($_POST['email'])) {
+    $email = mysqli_real_escape_string($koneksi, $_POST['email']);
+    $password = $_POST['password'];
 
-// 1. Cek di tabel Pasien dulu
-$q_pasien = mysqli_query($koneksi, "SELECT * FROM pasien WHERE email='$email'");
-$user = mysqli_fetch_assoc($q_pasien);
-
-if ($user && password_verify($password, $user['password'])) {
-    $nama_session = $user['nama_pasien'];
-    $role_session = 'pasien';
-} else {
-    // 2. Jika bukan pasien, cek di tabel Petugas
+    // ==========================================
+    // 1. CEK DI TABEL PETUGAS / ADMIN
+    // ==========================================
     $q_petugas = mysqli_query($koneksi, "SELECT * FROM petugas WHERE email='$email'");
-    $user = mysqli_fetch_assoc($q_petugas);
+    $d_petugas = mysqli_fetch_assoc($q_petugas);
 
-    if ($user && password_verify($password, $user['password'])) {
-        // Cek Verifikasi khusus untuk Petugas/Admin
-        if ($user['status'] == 0) {
+    if ($d_petugas && password_verify($password, $d_petugas['password'])) {
+        // Cek status aktif (jika ada fitur status untuk petugas)
+        if (isset($d_petugas['status']) && $d_petugas['status'] == 0) {
             header("Location: /login?pesan=belum_aktif");
             exit();
         }
-        $nama_session = $user['nama_lengkap'];
-        $role_session = $user['role'];
-    }
-}
 
-// 3. Jika user ditemukan di salah satu tabel
-if (isset($role_session)) {
-    $user_data = base64_encode(json_encode([
-        'id'   => $user['id'],
-        'nama' => $nama_session,
-        'role' => $role_session
-    ]));
-    setcookie('user_session', $user_data, time() + (86400 * 30), "/");
+        // Simpan sesi untuk Petugas/Admin
+        $_SESSION['nama_lengkap'] = $d_petugas['nama_lengkap'];
+        $_SESSION['role'] = $d_petugas['role'];
+        
+        session_write_close();
+        if ($d_petugas['role'] === 'admin') {
+            header("Location: /dashboard_admin");
+        } else {
+            header("Location: /dashboard_petugas");
+        }
+        exit();
+    } 
 
-    // Redirect ke dashboard masing-masing
-    if ($role_session == 'admin') header("Location: /dashboard_admin");
-    elseif ($role_session == 'pasien') header("Location: /dashboard_pasien");
-    else header("Location: /dashboard_petugas");
+    // ==========================================
+    // 2. CEK DI TABEL PASIEN
+    // ==========================================
+    $q_pasien = mysqli_query($koneksi, "SELECT * FROM pasien WHERE email='$email'");
+    $d_pasien = mysqli_fetch_assoc($q_pasien);
+
+    if ($d_pasien && password_verify($password, $d_pasien['password'])) {
+        // Simpan sesi dengan terminologi User dan kolom nama yang benar
+        $_SESSION['role'] = 'user'; 
+        $_SESSION['nama'] = $d_pasien['nama']; 
+        $_SESSION['id'] = $d_pasien['id']; 
+        
+        session_write_close();
+        header("Location: /dashboard_pasien"); 
+        exit();
+    } 
+
+    // ==========================================
+    // 3. JIKA EMAIL/PASSWORD SALAH DI KEDUA TABEL
+    // ==========================================
+    header("Location: /login?error=1");
+    exit();
+
 } else {
-    header("Location: /login?pesan=gagal");
+    // Jika ada yang mencoba mengakses file ini langsung dari URL tanpa form
+    header("Location: /login");
+    exit();
 }
 ?>
