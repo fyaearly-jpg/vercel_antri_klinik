@@ -237,7 +237,7 @@ function ambilNomor() {
     const formData = new FormData();
     formData.append('poli', poliDipilih);
 
-    fetch('ambil_antrean_terbaru.php', { method: 'POST', body: formData })
+    fetch('/tambah_antrian_terbaru', { method: 'POST', body: formData })
         .then(r => r.json())
         .then(data => {
             if (data.success) {

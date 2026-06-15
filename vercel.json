@@ -38,6 +38,22 @@
       "dest": "/api/dashboard_pasien.php"
     },
     {
+      "src": "/antrian_pasien",
+      "dest": "/api/antrian_pasien.php"
+    },
+    {
+      "src": "/ambil_antrean_terbaru",
+      "dest": "/api/ambil_antrean_terbaru.php"
+    },
+    {
+      "src": "/antrian_pasien",
+      "dest": "/api/antrian_pasien.php"
+    },
+    {
+      "src": "/proses_feedback",
+      "dest": "/api/proses_feedback.php"
+    },
+    {
       "src": "/monitoring",
       "dest": "/api/monitoring.php"
     },

@@ -297,7 +297,7 @@ $estimasi_jam    = date('H:i', strtotime("+{$estimasi_menit} minutes"));
 // REAL-TIME: pantau nomor yang sedang dipanggil
 // =============================================
 function pantauAntrean() {
-    fetch('get_antrian_sekarang.php')
+    fetch('/get_antrian_sekarang')
         .then(r => r.json())
         .then(data => {
             document.getElementById('nomor-realtime').textContent = data.nomor_antrean ?? '--';
@@ -310,7 +310,7 @@ function pantauAntrean() {
 // CEK STATUS TIKET MILIK PASIEN INI
 // =============================================
 function cekStatusTiket() {
-    fetch('cek_status_antrean.php')
+    fetch('/cek_status_antrean')
         .then(r => r.json())
         .then(data => {
             if (!data || data.status === 'none') return;
@@ -339,7 +339,7 @@ function cekStatusTiket() {
 // =============================================
 // BPS DATA
 // =============================================
-fetch('api_config.php')
+fetch('/api/api_config.php')
     .then(r => r.text())
     .then(teks => {
         // api_config.php kembalikan teks, ambil angkanya
