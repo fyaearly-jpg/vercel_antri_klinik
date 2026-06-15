@@ -1,12 +1,94 @@
 <?php
-// api/cek_status_pasien.php
-include 'koneksi.php';
+// Baca sesi dari Cookie (sesuai sistem auth yang dipakai)
+$cookie_raw  = $_COOKIE['user_session'] ?? null;
+$cookie_data = $cookie_raw ? json_decode(base64_decode($cookie_raw), true) : null;
 
-$nomor = mysqli_real_escape_string($koneksi, $_GET['nomor'] ?? '');
-$hari_ini = date('Y-m-d');
+if (!$cookie_data || $cookie_data['role'] !== 'pasien') {
+    header("Location: /login");
+    exit();
+}
 
-$query_antrian = mysqli_query($koneksi, "SELECT status, poli FROM antrian WHERE nomor_antrean = '$nomor' AND DATE(created_at) = '$hari_ini' LIMIT 1");
-$data = mysqli_fetch_assoc($query_antrian);
+$nama_pasien = htmlspecialchars($cookie_data['nama']);
+?>
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard Pasien - Klinik Sehat</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-slate-50">
+    <nav class="bg-emerald-600 p-4 text-white flex justify-between shadow-md">
+        <h1 class="font-bold tracking-wide">Klinik Sehat</h1>
+        <div class="flex gap-4 items-center">
+            <span class="font-medium">Halo, <?= $nama_pasien; ?></span>
+            <a href="logout.php" class="text-sm bg-emerald-700 hover:bg-emerald-800 px-3 py-1 rounded transition-colors">Keluar</a>
+        </div>
+    </nav>
 
-header('Content-Type: application/json');
-echo json_encode($data ?: ['status' => 'none']);
+    <div class="p-8 max-w-5xl mx-auto">
+        <h2 class="text-2xl font-bold mb-6 text-slate-800">Selamat Datang di Layanan Digital</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col h-full">
+                <h3 class="font-bold text-lg mb-2 text-slate-800">Ambil Antrean</h3>
+                <p class="text-slate-500 mb-4 text-sm flex-grow">Dapatkan nomor antrean pemeriksaan hari ini secara online.</p>
+                <button class="bg-emerald-600 text-white px-4 py-3 rounded-xl w-full font-bold hover:bg-emerald-700 transition-colors shadow-md">Ambil Nomor</button>
+            </div>
+            
+            <div class="bg-emerald-50 border-2 border-emerald-400 p-6 rounded-2xl shadow-md text-center transform transition-all hover:scale-105 flex flex-col h-full justify-center">
+                <div class="flex items-center justify-center gap-2 mb-2">
+                    <div class="w-3 h-3 bg-red-500 rounded-full animate-ping"></div>
+                    <h3 class="text-xs font-bold text-slate-600 uppercase tracking-wide">Sedang Dilayani Saat Ini</h3>
+                </div>
+                <h1 id="nomor-aktif-sekarang" class="text-6xl font-black text-emerald-600 my-2 tracking-tighter drop-shadow-sm">--</h1>
+                <p class="text-sm text-slate-500">Poli Tujuan: <span id="poli-aktif-sekarang" class="font-bold text-slate-700">Memuat...</span></p>
+            </div>
+
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col h-full">
+                <h3 class="font-bold text-lg mb-2 text-slate-800">Kirim Feedback</h3>
+                <p class="text-slate-500 mb-4 text-sm">Gimana pengalaman kamu hari ini?</p>
+                
+                <form action="proses_feedback.php" method="POST" class="space-y-3 flex-grow flex flex-col justify-end">
+                    <div>
+                        <label class="block mb-1 font-semibold text-slate-700 text-xs uppercase">Tingkat Kepuasan</label>
+                        <select name="kepuasan" class="w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 outline-none focus:ring-2 focus:ring-emerald-400 transition-all text-sm">
+                            <option value="Sangat Puas">Sangat Puas 😍</option>
+                            <option value="Puas">Puas 🙂</option>
+                            <option value="Cukup">Cukup 😐</option>
+                            <option value="Kurang">Kurang 🙁</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block mb-1 font-semibold text-slate-700 text-xs uppercase">Saran</label>
+                        <textarea name="saran" rows="2" class="w-full p-2.5 border border-slate-200 rounded-xl bg-slate-50 outline-none focus:ring-2 focus:ring-emerald-400 transition-all text-sm" placeholder="Tulis saran..."></textarea>
+                    </div>
+                    <button type="submit" class="bg-slate-800 text-white px-4 py-2.5 rounded-xl w-full font-bold hover:bg-slate-900 transition-colors shadow-md mt-2">
+                        KIRIM SARAN
+                    </button>
+                </form>
+            </div>
+            
+        </div>
+    </div>
+
+    <script>
+        function pantauAntreanRealTime() {
+            // Pakai get_antrian_sekarang.php — khusus untuk pantau nomor yang sedang dipanggil
+            fetch('get_antrian_sekarang.php')
+                .then(response => response.json())
+                .then(data => {
+                    // Nama field dari DB adalah 'nomor_antrean' (bukan 'nomor_antrian')
+                    document.getElementById('nomor-aktif-sekarang').innerText = data.nomor_antrean ?? '--';
+                    document.getElementById('poli-aktif-sekarang').innerText  = data.poli ?? 'Belum ada panggilan';
+                })
+                .catch(error => console.error('Gagal mengambil data real-time:', error));
+        }
+
+        pantauAntreanRealTime();
+        setInterval(pantauAntreanRealTime, 3000); // Update otomatis tiap 3 detik
+    </script>
+</body>
+</html>
