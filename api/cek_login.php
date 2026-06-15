@@ -37,28 +37,19 @@ if (isset($_POST['email'])) {
     // 2. CEK DI TABEL PASIEN
     // ==========================================
     $q_pasien = mysqli_query($koneksi, "SELECT * FROM pasien WHERE email='$email'");
-    $d_pasien = mysqli_fetch_assoc($q_pasien);
-
-    if ($d_pasien && password_verify($password, $d_pasien['password'])) {
-        // Simpan sesi dengan terminologi User dan kolom nama yang benar
-        $_SESSION['role'] = 'user'; 
-        $_SESSION['nama'] = $d_pasien['nama']; 
-        $_SESSION['id'] = $d_pasien['id']; 
-        
-        session_write_close();
-        header("Location: /dashboard_pasien"); 
-        exit();
-    } 
-
-    // ==========================================
-    // 3. JIKA EMAIL/PASSWORD SALAH DI KEDUA TABEL
-    // ==========================================
-    header("Location: /login?error=1");
-    exit();
-
-} else {
-    // Jika ada yang mencoba mengakses file ini langsung dari URL tanpa form
-    header("Location: /login");
-    exit();
-}
+    if (mysqli_num_rows($q_pasien) > 0) {
+        $d_pasien = mysqli_fetch_assoc($q_pasien);
+        // Cocokkan password hash
+        if (password_verify($password, $d_pasien['password'])) {
+            $_SESSION['role'] = 'pasien'; 
+            
+            // PERBAIKAN DI SINI: Gunakan 'nama_pasien' sesuai dengan kolom database
+            $_SESSION['nama'] = $d_pasien['nama_pasien']; 
+            $_SESSION['nama_pasien'] = $d_pasien['nama_pasien']; // Simpan dua-duanya agar aman
+            $_SESSION['id_pasien'] = $d_pasien['id']; 
+            
+            header("Location: /dashboard_pasien"); 
+            exit();
+        }
+    }
 ?>
