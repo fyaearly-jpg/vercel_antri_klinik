@@ -59,40 +59,64 @@
         </div>
     </div>
 
+    <!-- Tombol Aktifkan Suara (wajib klik dulu agar browser izinkan TTS) -->
+    <div id="overlay-suara" style="position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:999;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:1.5rem;">
+        <div style="text-align:center;">
+            <div style="font-size:3rem;margin-bottom:1rem;">🔊</div>
+            <h2 style="color:white;font-size:1.5rem;font-weight:800;margin-bottom:0.5rem;">Aktifkan Suara Panggilan</h2>
+            <p style="color:#94a3b8;font-size:0.875rem;">Klik tombol di bawah untuk mengaktifkan pengumuman suara otomatis</p>
+        </div>
+        <button onclick="aktifkanSuara()" style="background:linear-gradient(135deg,#10b981,#059669);color:white;border:none;padding:1rem 2.5rem;border-radius:1rem;font-size:1rem;font-weight:700;cursor:pointer;box-shadow:0 8px 24px rgba(16,185,129,0.4);">
+            ▶ Mulai Display & Aktifkan Suara
+        </button>
+    </div>
+
     <script>
         let nomorTerakhir = "";
+        let suaraAktif = false;
+
+        function aktifkanSuara() {
+            // Warm-up TTS agar browser izinkan
+            const warmup = new SpeechSynthesisUtterance('');
+            window.speechSynthesis.speak(warmup);
+            suaraAktif = true;
+
+            document.getElementById('overlay-suara').style.display = 'none';
+            updateDisplay();
+        }
 
         // Fungsi Suara (TTS)
         function panggilAntrean(nomor, poli) {
-            const teks = `Nomor antrean ${nomor}, silakan menuju ke ${poli}`;
+            if (!suaraAktif) return;
+            window.speechSynthesis.cancel(); // batalkan antrian suara sebelumnya
+            const teks = `Nomor antrean ${nomor}, poli ${poli}, silakan menuju ke ruangan`;
             const utterance = new SpeechSynthesisUtterance(teks);
             utterance.lang = 'id-ID';
             utterance.rate = 0.85;
             utterance.pitch = 1;
+            utterance.volume = 1;
             window.speechSynthesis.speak(utterance);
         }
 
         // Ambil Data dari API
         function updateDisplay() {
-            fetch('/get_antrian_sekarang') 
+            fetch('/get_antrian_sekarang')
                 .then(res => res.json())
                 .then(data => {
                     if (data.nomor_antrean !== "--" && data.nomor_antrean !== nomorTerakhir) {
                         const elNomor = document.getElementById('display-nomor');
-                        
-                        // Animasi saat angka berubah
+
                         elNomor.style.opacity = "0";
                         elNomor.style.transform = "scale(0.9)";
-                        
+
                         setTimeout(() => {
                             elNomor.innerText = data.nomor_antrean;
                             document.getElementById('display-poli').innerText = data.poli;
                             elNomor.style.opacity = "1";
                             elNomor.style.transform = "scale(1)";
-                            
                             panggilAntrean(data.nomor_antrean, data.poli);
                         }, 500);
-                        
+
                         nomorTerakhir = data.nomor_antrean;
                     }
                 })
@@ -102,13 +126,14 @@
         // Jam Digital
         function updateClock() {
             const now = new Date();
-            const timeStr = now.toLocaleTimeString('id-ID', { hour12: false });
-            document.getElementById('digital-clock').innerText = timeStr;
+            document.getElementById('digital-clock').innerText =
+                now.toLocaleTimeString('id-ID', { hour12: false });
         }
 
-        setInterval(updateDisplay, 3000);
+        // Mulai polling hanya setelah suara diaktifkan
+        setInterval(() => { if (suaraAktif) updateDisplay(); }, 3000);
         setInterval(updateClock, 1000);
-        updateDisplay();
+        updateClock();
     </script>
 </body>
 </html>
